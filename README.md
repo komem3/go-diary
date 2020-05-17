@@ -7,23 +7,22 @@ go-diary analys and format directory, and rewrite README.md which is written str
 
 ```sh
 $ diary -h
-Usage of diary:
-  -copyDir string
-    	Format directory. 
-    	When this option is difference from 'dir', all file will copy to 'copyDir'.
-  -dir string
-    	Analysis directory. (default ".")
-  -file string
-    	Rewrite file.
-    	Default value is './README.md.
-    	In org mode value is ./README.org
-  -org
-    	Use org template.
-  -tmpl string
-    	Parse template file.
-    	Default is template/top.template.md.
-    	In org mode value is template/org.template.org.
-  -v	Output verbose.
+Diary is a CLI libray for managing your diary.
+This application can format your diary directory, and make index file.
+
+Usage:
+  diary [command]
+
+Available Commands:
+  format      Format directory
+  help        Help about any command
+  init        Initialize directory
+
+Flags:
+  -h, --help      help for diary
+  -v, --version   version for diary
+
+Use "diary [command] --help" for more information about a command.
 ```
 
 
@@ -47,7 +46,11 @@ $ tree
 ├── 20200102.txt
 └── 20200202.org
 
-$ diary
+$ diary init
+$ ls
+20021201.md  20200101.md  20200102.txt  20200202.org  template
+
+$ diary format
 $ tree
 .
 ├── 2002

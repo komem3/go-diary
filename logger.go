@@ -9,21 +9,27 @@ import (
 
 const ErrLogOut = "log output: %v\n"
 
-type Logger struct {
+type Logger interface {
+	Debug(args ...interface{})
+	Warn(args ...interface{})
+	Error(args ...interface{})
+}
+
+type logger struct {
 	log     kitlog.Logger
 	logErr  kitlog.Logger
 	verbose bool
 }
 
 func NewLogger(verbose bool) Logger {
-	return Logger{
+	return &logger{
 		log:     kitlog.NewLogfmtLogger(os.Stdout),
 		logErr:  kitlog.NewLogfmtLogger(os.Stderr),
 		verbose: verbose,
 	}
 }
 
-func (l Logger) Debug(args ...interface{}) {
+func (l logger) Debug(args ...interface{}) {
 	if l.verbose {
 		err := l.log.Log(
 			interfaceSlice(
@@ -37,7 +43,7 @@ func (l Logger) Debug(args ...interface{}) {
 	}
 }
 
-func (l Logger) Warn(args ...interface{}) {
+func (l logger) Warn(args ...interface{}) {
 	if l.verbose {
 		err := l.log.Log(
 			interfaceSlice(
@@ -51,7 +57,7 @@ func (l Logger) Warn(args ...interface{}) {
 	}
 }
 
-func (l Logger) Error(args ...interface{}) {
+func (l logger) Error(args ...interface{}) {
 	err := l.logErr.Log(
 		interfaceSlice(
 			"level", "error",
