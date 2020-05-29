@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/komem3/diary"
@@ -8,42 +9,48 @@ import (
 )
 
 type initCommand struct {
-	cmd *cobra.Command
+	to      string
+	verbose bool
+	cmd     *cobra.Command
 }
 
-var (
-	initCmd = &initCommand{
-		&cobra.Command{
+func NewInitCommand() CommandInitializer {
+	command := &initCommand{
+		cmd: &cobra.Command{
 			Use:   "init",
 			Short: "Initialize directory",
 			Long: `Init make template directory.
 You need to run this command before running other command.
 `,
-			Run: func(cmd *cobra.Command, args []string) {
-				logger := diary.NewLogger(verbose)
-				logger.Debug(
-					"msg", "initialize template",
-				)
-				if err := diary.Initialize(logger, to, tmplDir, []string{mdTmp, orgTmp}); err != nil {
-					logger.Error(
-						"when", "initialize",
-						"err", err,
-					)
-					os.Exit(1)
-				}
-			},
 		},
 	}
-)
+	command.cmd.Run = func(cmd *cobra.Command, args []string) {
+		if err := command.initialize(); err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
+	}
+	return command
+}
 
-func (c *initCommand) init() *cobra.Command {
+func (c *initCommand) Init() *cobra.Command {
 	c.cmd.Flags().StringVarP(
-		&to,
+		&c.to,
 		"dir",
 		"d",
 		".",
 		"created template directory path",
 	)
-	c.cmd.Flags().BoolVar(&verbose, "v", false, "Output verbose.")
+	c.cmd.Flags().BoolVar(&c.verbose, "v", false, "Output verbose.")
 	return c.cmd
+}
+
+func (c initCommand) initialize() error {
+	logger := diary.NewLogger(c.verbose)
+	logger.Debug(
+		"msg", "initialize template",
+	)
+	if err := diary.Initialize(logger, c.to, tmplDir, []string{mdTmp, orgTmp}); err != nil {
+		return fmt.Errorf("initialize template: %w", err)
+	}
+	return nil
 }

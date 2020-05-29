@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/komem3/diary"
@@ -8,79 +9,85 @@ import (
 )
 
 type formatCommand struct {
-	cmd *cobra.Command
+	cmd      *cobra.Command
+	from     string
+	to       string
+	file     string
+	tempFile string
+	orgMode  bool
+	verbose  bool
 }
 
-var (
-	formatCmd = &formatCommand{
-		&cobra.Command{
+func NewFormatCommand() CommandInitializer {
+	command := &formatCommand{
+		cmd: &cobra.Command{
 			Use:   "format",
 			Short: "Format directory",
 			Long: `Format command analys and format target directory.
 After format directory, this rewrite directory structure to target file.
 `,
-			Run: func(cmd *cobra.Command, args []string) {
-				logger := diary.NewLogger(verbose)
-				if orgMode {
-					if file == "" {
-						file = "./README.org"
-					}
-					if tempFile == "" {
-						tempFile = orgTmp
-					}
-				} else {
-					if file == "" {
-						file = "./README.md"
-					}
-					if tempFile == "" {
-						tempFile = mdTmp
-					}
-				}
-				dGen, err := diary.NewDiaryGenerator(file, tempFile, from, to, orgMode, logger)
-				if err != nil {
-					logger.Error(
-						"when", "generate generator",
-						"err", err.Error(),
-					)
-					return
-				}
-				logger.Debug(
-					"msg", "analys start",
-					"dir", from,
-				)
-				fMap := diary.ParseFileMap(from)
-				elem := diary.Map2Elem(fMap)
-				dGen.FormatDir(fMap).WriteDirTree(elem)
-
-				if dGen.Err != nil {
-					logger.Error(
-						"when", "format and write dir tree",
-						"err", dGen.Err.Error(),
-					)
-					os.Exit(1)
-				}
-			},
 		},
 	}
-)
+	command.cmd.Run = func(cmd *cobra.Command, args []string) {
+		if err := command.Format(); err != nil {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
+	}
+	return command
+}
 
-func (c *formatCommand) init() *cobra.Command {
-	c.cmd.PersistentFlags().StringVarP(&from, "dir", "d", ".",
+func (c *formatCommand) Init() *cobra.Command {
+	c.cmd.PersistentFlags().StringVarP(&c.from, "dir", "d", ".",
 		"Analysis directory.",
 	)
-	c.cmd.PersistentFlags().StringVar(&to, "copyDir", "",
+	c.cmd.PersistentFlags().StringVar(&c.to, "copyDir", "",
 		"Format directory. \nWhen this option is difference from 'dir', all file will copy to 'copyDir'.",
 	)
-	c.cmd.PersistentFlags().StringVarP(&file, "file", "f", "",
+	c.cmd.PersistentFlags().StringVarP(&c.file, "file", "f", "",
 		"Rewrite file.\nDefault value is './README.md.\nIn org mode value is ./README.org",
 	)
-	c.cmd.PersistentFlags().StringVar(&tempFile, "tmpl", "",
+	c.cmd.PersistentFlags().StringVar(&c.tempFile, "tmpl", "",
 		"Parse template file.\nDefault is "+mdTmp+".\nIn org mode value is "+orgTmp+".",
 	)
-	c.cmd.PersistentFlags().BoolVar(&orgMode, "org", false,
+	c.cmd.PersistentFlags().BoolVar(&c.orgMode, "org", false,
 		"Use org template.",
 	)
-	c.cmd.Flags().BoolVar(&verbose, "v", false, "Output verbose.")
+	c.cmd.Flags().BoolVar(&c.verbose, "v", false, "Output verbose.")
 
 	return c.cmd
+}
+
+func (c formatCommand) Format() error {
+	logger := diary.NewLogger(c.verbose)
+	if c.orgMode {
+		if c.file == "" {
+			c.file = "./README.org"
+		}
+		if c.tempFile == "" {
+			c.tempFile = orgTmp
+		}
+	} else {
+		if c.file == "" {
+			c.file = "./README.md"
+		}
+		if c.tempFile == "" {
+			c.tempFile = mdTmp
+		}
+	}
+	dGen, err := diary.NewDiaryGenerator(c.file, c.tempFile, c.from, c.to, c.orgMode, logger)
+	if err != nil {
+		return fmt.Errorf("generate generator: %w", err)
+	}
+	logger.Debug(
+		"msg", "analys start",
+		"dir", c.from,
+	)
+	fMap := diary.ParseFileMap(c.from)
+	elem := diary.Map2Elem(fMap)
+	dGen.FormatDir(fMap).WriteDirTree(elem)
+
+	if dGen.Err != nil {
+		return fmt.Errorf("format and write dir tree: %w", dGen.Err)
+	}
+	return nil
 }

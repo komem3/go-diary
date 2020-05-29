@@ -19,16 +19,22 @@ This application can format your diary directory, and make index file.
 	}
 )
 
-func Initialize() {
+type CommandInitializer interface {
+	Init() *cobra.Command
+}
+
+func Initialize(cmdi ...CommandInitializer) {
+	commands := make([]*cobra.Command, 0, len(cmdi))
+	for _, c := range cmdi {
+		commands = append(commands, c.Init())
+	}
 	rootCmd.AddCommand(
-		initCmd.init(),
-		formatCmd.init(),
+		commands...,
 	)
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
 	}
 }

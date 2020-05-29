@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	cmd.Initialize()
+	cmd.Initialize(cmd.NewInitCommand(), cmd.NewFormatCommand())
 	cmd.Execute()
 }
