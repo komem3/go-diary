@@ -5,6 +5,7 @@ import (
 	"os"
 
 	kitlog "github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/log/level"
 )
 
 const ErrLogOut = "log output: %v\n"
@@ -16,63 +17,38 @@ type Logger interface {
 }
 
 type logger struct {
-	log     kitlog.Logger
-	logErr  kitlog.Logger
-	verbose bool
+	log kitlog.Logger
 }
 
 func NewLogger(verbose bool) Logger {
+	log := kitlog.NewLogfmtLogger(os.Stderr)
+	if verbose {
+		log = level.NewFilter(log, level.AllowDebug())
+	} else {
+		log = level.NewFilter(log, level.AllowAll())
+	}
 	return &logger{
-		log:     kitlog.NewLogfmtLogger(os.Stdout),
-		logErr:  kitlog.NewLogfmtLogger(os.Stderr),
-		verbose: verbose,
+		log: log,
 	}
 }
 
 func (l logger) Debug(args ...interface{}) {
-	if l.verbose {
-		err := l.log.Log(
-			interfaceSlice(
-				"level", "debug",
-				args...,
-			)...,
-		)
-		if err != nil {
-			fmt.Printf(ErrLogOut, err)
-		}
+	err := level.Debug(l.log).Log(args...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, ErrLogOut, err)
 	}
 }
 
 func (l logger) Warn(args ...interface{}) {
-	if l.verbose {
-		err := l.log.Log(
-			interfaceSlice(
-				"level", "warn",
-				args...,
-			)...,
-		)
-		if err != nil {
-			fmt.Printf(ErrLogOut, err)
-		}
+	err := level.Warn(l.log).Log(args...)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, ErrLogOut, err)
 	}
 }
 
 func (l logger) Error(args ...interface{}) {
-	err := l.logErr.Log(
-		interfaceSlice(
-			"level", "error",
-			args...,
-		)...,
-	)
+	err := level.Error(l.log).Log(args...)
 	if err != nil {
-		fmt.Printf(ErrLogOut, err)
+		fmt.Fprintf(os.Stderr, ErrLogOut, err)
 	}
-}
-
-func interfaceSlice(level, name string, args ...interface{}) []interface{} {
-	interfaceSlice := make([]interface{}, len(args)+2)
-	interfaceSlice[0] = level
-	interfaceSlice[1] = name
-	_ = copy(interfaceSlice[2:], args)
-	return interfaceSlice
 }
