@@ -25,7 +25,7 @@ func NewLogger(verbose bool) Logger {
 	if verbose {
 		log = level.NewFilter(log, level.AllowDebug())
 	} else {
-		log = level.NewFilter(log, level.AllowAll())
+		log = level.NewFilter(log, level.AllowWarn())
 	}
 	return &logger{
 		log: log,
