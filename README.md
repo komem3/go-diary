@@ -101,13 +101,6 @@ $ cat README.md
 go get github.com/komem3/diary/cmd/diary
 ```
 
-
-### download binary
-
-- [mac 64bit](./build/darwin-amd64/diary)
-- [windows 64bit](./build/windows-amd64/diary)
-- [linux 64bit](./build/linux-amd64/diary)
-
 ## Lisesnce
 
 MIT
