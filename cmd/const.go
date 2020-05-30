@@ -4,7 +4,10 @@ import "path/filepath"
 
 const tmplDir = "template"
 
-var (
-	mdTmp  = filepath.Join(tmplDir, "top.template.md")
-	orgTmp = filepath.Join(tmplDir, "org.template.org")
-)
+func mdTmp() string {
+	return filepath.Join(tmplDir, "top.template.md")
+}
+
+func orgTmp() string {
+	return filepath.Join(tmplDir, "org.template.org")
+}

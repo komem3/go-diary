@@ -8,8 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type formatCommand struct {
-	cmd      *cobra.Command
+type formatter struct {
 	from     string
 	to       string
 	file     string
@@ -18,71 +17,78 @@ type formatCommand struct {
 	verbose  bool
 }
 
-func NewFormatCommand() CommandInitializer {
-	command := &formatCommand{
-		cmd: &cobra.Command{
-			Use:   "format",
-			Short: "Format directory",
-			Long: `Format command analys and format target directory.
+func newFormatter() *formatter {
+	return &formatter{
+		from:     ".",
+		to:       "",
+		file:     "",
+		tempFile: "",
+		orgMode:  false,
+		verbose:  false,
+	}
+}
+
+func NewFormatCommand() *cobra.Command {
+	command := &cobra.Command{
+		Use:   "format",
+		Short: "Format directory",
+		Long: `Format command analys and format target directory.
 After format directory, this rewrite directory structure to target file.
 `,
-		},
 	}
-	command.cmd.Run = func(cmd *cobra.Command, args []string) {
-		if err := command.Format(); err != nil {
+
+	f := newFormatter()
+	command.PersistentFlags().StringVarP(&f.from, "dir", "d", f.from,
+		"Analysis directory.",
+	)
+	command.PersistentFlags().StringVar(&f.to, "copyDir", f.to,
+		"Format directory. \nWhen this option is difference from 'dir', all file will copy to 'copyDir'.",
+	)
+	command.PersistentFlags().StringVarP(&f.file, "file", "f", f.file,
+		"Rewrite file.\nDefault value is './README.md.\nIn org mode value is ./README.org",
+	)
+	command.PersistentFlags().StringVar(&f.tempFile, "tmpl", f.tempFile,
+		"Parse template file.\nDefault is "+mdTmp()+".\nIn org mode value is "+orgTmp()+".",
+	)
+	command.PersistentFlags().BoolVar(&f.orgMode, "org", f.orgMode,
+		"Use org template.",
+	)
+	command.Flags().BoolVar(&f.verbose, "v", f.verbose, "Output verbose.")
+
+	command.Run = func(cmd *cobra.Command, args []string) {
+		if err := f.Format(); err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 		}
 	}
 	return command
 }
 
-func (c *formatCommand) Init() *cobra.Command {
-	c.cmd.PersistentFlags().StringVarP(&c.from, "dir", "d", ".",
-		"Analysis directory.",
-	)
-	c.cmd.PersistentFlags().StringVar(&c.to, "copyDir", "",
-		"Format directory. \nWhen this option is difference from 'dir', all file will copy to 'copyDir'.",
-	)
-	c.cmd.PersistentFlags().StringVarP(&c.file, "file", "f", "",
-		"Rewrite file.\nDefault value is './README.md.\nIn org mode value is ./README.org",
-	)
-	c.cmd.PersistentFlags().StringVar(&c.tempFile, "tmpl", "",
-		"Parse template file.\nDefault is "+mdTmp+".\nIn org mode value is "+orgTmp+".",
-	)
-	c.cmd.PersistentFlags().BoolVar(&c.orgMode, "org", false,
-		"Use org template.",
-	)
-	c.cmd.Flags().BoolVar(&c.verbose, "v", false, "Output verbose.")
-
-	return c.cmd
-}
-
-func (c formatCommand) Format() error {
-	logger := diary.NewLogger(c.verbose)
-	if c.orgMode {
-		if c.file == "" {
-			c.file = "./README.org"
+func (f formatter) Format() error {
+	logger := diary.NewLogger(f.verbose)
+	if f.orgMode {
+		if f.file == "" {
+			f.file = "./README.org"
 		}
-		if c.tempFile == "" {
-			c.tempFile = orgTmp
+		if f.tempFile == "" {
+			f.tempFile = orgTmp()
 		}
 	} else {
-		if c.file == "" {
-			c.file = "./README.md"
+		if f.file == "" {
+			f.file = "./README.md"
 		}
-		if c.tempFile == "" {
-			c.tempFile = mdTmp
+		if f.tempFile == "" {
+			f.tempFile = mdTmp()
 		}
 	}
-	dGen, err := diary.NewDiaryGenerator(c.file, c.tempFile, c.from, c.to, c.orgMode, logger)
+	dGen, err := diary.NewDiaryGenerator(f.file, f.tempFile, f.from, f.to, f.orgMode, logger)
 	if err != nil {
 		return fmt.Errorf("generate generator: %w", err)
 	}
 	logger.Debug(
 		"msg", "analys start",
-		"dir", c.from,
+		"dir", f.from,
 	)
-	fMap := diary.ParseFileMap(c.from)
+	fMap := diary.ParseFileMap(f.from)
 	elem := diary.Map2Elem(fMap)
 	dGen.FormatDir(fMap).WriteDirTree(elem)
 
