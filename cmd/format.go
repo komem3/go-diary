@@ -60,6 +60,9 @@ After format directory, it write directory structure to target file.
 
 func (f formatter) Format() error {
 	logger := diary.NewLogger(f.verbose)
+	if f.to == "" {
+		f.to = f.from
+	}
 
 	formatter := diary.NewFormatter(logger)
 	logger.Debug(
