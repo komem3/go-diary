@@ -13,7 +13,6 @@ type formatter struct {
 	to       string
 	file     string
 	tempFile string
-	orgMode  bool
 	verbose  bool
 }
 
@@ -21,9 +20,8 @@ func newFormatter() *formatter {
 	return &formatter{
 		from:     ".",
 		to:       "",
-		file:     "",
-		tempFile: "",
-		orgMode:  false,
+		file:     "./README.md",
+		tempFile: mdTmp(),
 		verbose:  false,
 	}
 }
@@ -32,8 +30,8 @@ func NewFormatCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "format",
 		Short: "Format directory",
-		Long: `Format command analys and format target directory.
-After format directory, this rewrite directory structure to target file.
+		Long: `Format command analys and format directory.
+After format directory, it write directory structure to target file.
 `,
 	}
 
@@ -45,13 +43,10 @@ After format directory, this rewrite directory structure to target file.
 		"Format directory. \nWhen this option is difference from 'dir', all file will copy to 'copyDir'.",
 	)
 	command.PersistentFlags().StringVarP(&f.file, "file", "f", f.file,
-		"Rewrite file.\nDefault value is './README.md.\nIn org mode value is ./README.org",
+		"Write file.",
 	)
 	command.PersistentFlags().StringVar(&f.tempFile, "tmpl", f.tempFile,
-		"Parse template file.\nDefault is "+mdTmp()+".\nIn org mode value is "+orgTmp()+".",
-	)
-	command.PersistentFlags().BoolVar(&f.orgMode, "org", f.orgMode,
-		"Use org template.",
+		"Parse template file.",
 	)
 	command.Flags().BoolVar(&f.verbose, "v", f.verbose, "Output verbose.")
 
@@ -65,35 +60,18 @@ After format directory, this rewrite directory structure to target file.
 
 func (f formatter) Format() error {
 	logger := diary.NewLogger(f.verbose)
-	if f.orgMode {
-		if f.file == "" {
-			f.file = "./README.org"
-		}
-		if f.tempFile == "" {
-			f.tempFile = orgTmp()
-		}
-	} else {
-		if f.file == "" {
-			f.file = "./README.md"
-		}
-		if f.tempFile == "" {
-			f.tempFile = mdTmp()
-		}
-	}
-	dGen, err := diary.NewDiaryGenerator(f.file, f.tempFile, f.from, f.to, f.orgMode, logger)
-	if err != nil {
-		return fmt.Errorf("generate generator: %w", err)
-	}
+
+	formatter := diary.NewFormatter(logger)
 	logger.Debug(
 		"msg", "analys start",
 		"dir", f.from,
 	)
-	fMap := diary.ParseFileMap(f.from)
-	elem := diary.Map2Elem(fMap)
-	dGen.FormatDir(fMap).WriteDirTree(elem)
+	fMap := formatter.ParseFileMap(f.from)
+	elem := formatter.Map2Elem(fMap)
+	formatter.FormatDir(fMap, f.to, f.to == f.from).WriteDirTree(elem, f.file, f.tempFile, f.to)
 
-	if dGen.Err != nil {
-		return fmt.Errorf("format and write dir tree: %w", dGen.Err)
+	if formatter.Err != nil {
+		return fmt.Errorf("format and write dir tree: %w", formatter.Err)
 	}
 	return nil
 }

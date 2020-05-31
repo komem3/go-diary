@@ -7,6 +7,9 @@ test: ## test
 gen: ## generate task
 	statik -src=./template
 
+install: ## install diary
+	cd cmd/diary && go install .
+
 build: build-linux	build-mac	build-win  ## do all build task
 
 build-linux: ## build linux 64bit binary

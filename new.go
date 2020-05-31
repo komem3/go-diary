@@ -8,46 +8,46 @@ import (
 	"time"
 )
 
-// Generator generate file
-type Generator struct {
+// Creator generate file
+type Creator struct {
 	logger Logger
 	now    func() time.Time
 	Err    error
 }
 
-// NewGenerator generate Generator
-func NewGenerator(l Logger) *Generator {
-	return &Generator{
+// NewCreator generate Creator
+func NewCreator(l Logger) *Creator {
+	return &Creator{
 		logger: l,
 		now:    time.Now,
 	}
 }
 
 // NewDiary generate today diary
-func (g *Generator) NewDiary(tmplFile, dir, nameFormat string) {
-	if g.Err != nil {
+func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
+	if c.Err != nil {
 		return
 	}
-	g.logger.Debug(
+	c.logger.Debug(
 		"msg", "start to generate diary",
 		"templateFile", tmplFile,
 	)
 
 	temp, err := template.New(filepath.Base(tmplFile)).ParseFiles(tmplFile)
 	if err != nil {
-		g.Err = fmt.Errorf("open template file: %w", err)
+		c.Err = fmt.Errorf("open template file: %w", err)
 		return
 	}
 
-	tmpName := fmt.Sprintf("diary-%v-tmp.txt", g.now().UnixNano())
+	tmpName := fmt.Sprintf("diary-%v-tmp.txt", c.now().UnixNano())
 	file, err := os.Create(tmpName)
 	if err != nil {
-		g.Err = fmt.Errorf("create diary file: %w", err)
+		c.Err = fmt.Errorf("create diary file: %w", err)
 		return
 	}
-	defer CloseWithErrLog(g.logger, file)
+	defer CloseWithErrLog(c.logger, file)
 
-	now := g.now()
+	now := c.now()
 	err = temp.Execute(file, map[string]interface{}{
 		"Year":    fmt.Sprintf("%d", now.Year()),
 		"Month":   fmt.Sprintf("%02d", now.Month()),
@@ -55,9 +55,9 @@ func (g *Generator) NewDiary(tmplFile, dir, nameFormat string) {
 		"Weekday": now.Weekday().String(),
 	})
 	if err != nil {
-		g.Err = fmt.Errorf("parse date information: %w", err)
+		c.Err = fmt.Errorf("parse date information: %w", err)
 		if err = os.Remove(tmpName); err != nil {
-			g.logger.Error("err", err)
+			c.logger.Error("err", err)
 		}
 		return
 	}
@@ -65,10 +65,10 @@ func (g *Generator) NewDiary(tmplFile, dir, nameFormat string) {
 	diaryFile := now.Format(nameFormat)
 	err = os.Rename(tmpName, filepath.Join(dir, diaryFile))
 	if err != nil {
-		g.Err = fmt.Errorf("move temp file to %s: %w", diaryFile, err)
+		c.Err = fmt.Errorf("move temp file to %s: %w", diaryFile, err)
 		return
 	}
-	g.logger.Debug(
+	c.logger.Debug(
 		"msg", "end to generate diary",
 		"file", diaryFile,
 	)

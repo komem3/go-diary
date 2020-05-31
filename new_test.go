@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerator_NewDiary(t *testing.T) {
+func TestCreator_NewDiary(t *testing.T) {
 	type (
 		fields struct {
 			dir        string
@@ -91,15 +91,15 @@ func TestGenerator_NewDiary(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
-			f := diary.NewGenerator(logger)
-			f.SetNowFunc(func() time.Time { return tt.fields.now })
+			creator := diary.NewCreator(logger)
+			creator.SetNowFunc(func() time.Time { return tt.fields.now })
 
-			f.NewDiary(tt.fields.tmplFile, tt.fields.dir, tt.fields.nameFormat)
+			creator.NewDiary(tt.fields.tmplFile, tt.fields.dir, tt.fields.nameFormat)
 			if tt.want.err != nil {
-				assertions.EqualError(f.Err, tt.want.err.Error())
+				assertions.EqualError(creator.Err, tt.want.err.Error())
 				return
 			}
-			if !assertions.NoError(f.Err) {
+			if !assertions.NoError(creator.Err) {
 				return
 			}
 

@@ -2,6 +2,14 @@ package diary
 
 import "time"
 
-func (g *Generator) SetNowFunc(now func() time.Time) {
+func (c *Creator) SetNowFunc(now func() time.Time) {
+	c.now = now
+}
+
+func (g *Formatter) SetNowFunc(now func() time.Time) {
 	g.now = now
 }
+
+var (
+	FormatterCopyfFile = (*Formatter).copyFile
+)

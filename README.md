@@ -44,12 +44,11 @@ $ tree
 .
 ├── 20021201.md
 ├── 20200101.md
-├── 20200102.txt
-└── 20200202.org
+└── 20200102.txt
 
 $ diary init
 $ ls
-20021201.md  20200101.md  20200102.txt  20200202.org  template
+20021201.md  20200101.md  20200102.txt template
 
 $ diary format
 $ tree
@@ -66,7 +65,6 @@ $ tree
 ├── README.md
 └── template
     ├── diary.template.md
-    ├── org.template.org
     └── top.template.md
 
 $ diary new

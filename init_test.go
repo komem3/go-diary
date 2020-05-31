@@ -68,7 +68,7 @@ func TestInitialize(t *testing.T) {
 		},
 	}
 	tmplFile := "template"
-	files := []string{"template/top.template.md", "template/org.template.org"}
+	files := []string{"template/top.template.md"}
 	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

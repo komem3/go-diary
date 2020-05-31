@@ -1,18 +1,17 @@
-package diary
+package diary_test
 
 import (
 	"io/ioutil"
 	"testing"
-	"time"
 
-	"github.com/golang/glog"
+	"github.com/komem3/diary"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWriteDirTree(t *testing.T) {
+func TestFormatter_WriteDirTree(t *testing.T) {
 	type (
 		args struct {
-			elem         TopElem
+			elem         diary.TopElem
 			readMePath   string
 			templatePath string
 		}
@@ -30,14 +29,14 @@ func TestWriteDirTree(t *testing.T) {
 		{
 			"success1",
 			args{
-				elem: TopElem{
-					Years: []YearElem{
+				elem: diary.TopElem{
+					Years: []diary.YearElem{
 						{
 							Year: "2019",
-							Months: []MonthElem{
+							Months: []diary.MonthElem{
 								{
 									Month: "1",
-									Days: []DayElem{
+									Days: []diary.DayElem{
 										{
 											Day:  "01",
 											Path: "2019/01/01",
@@ -46,7 +45,7 @@ func TestWriteDirTree(t *testing.T) {
 								},
 								{
 									Month: "2",
-									Days: []DayElem{
+									Days: []diary.DayElem{
 										{
 											Day:  "02",
 											Path: "2019/02/02",
@@ -71,7 +70,7 @@ func TestWriteDirTree(t *testing.T) {
 		{
 			"success2",
 			args{
-				elem:         TopElem{},
+				elem:         diary.TopElem{},
 				readMePath:   "./testdata/WriteDirTree/top_readme_test2_in.txt",
 				templatePath: "./testdata/WriteDirTree/top.template.md",
 			},
@@ -81,22 +80,23 @@ func TestWriteDirTree(t *testing.T) {
 			},
 		},
 	}
+	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
-			dGen := &DiayGeneretor{
-				file:     tt.args.readMePath + ".copy",
-				tmplFile: tt.args.templatePath,
-				logger:   NewLogger(false),
-				now:      time.Now,
-				to:       ".",
-			}
-			err := dGen.copyFile(tt.args.readMePath, tt.args.readMePath+".copy")
+
+			f := diary.NewFormatter(logger)
+			err := diary.FormatterCopyfFile(f, tt.args.readMePath, tt.args.readMePath+".copy")
 			if !assertions.NoError(err) {
 				return
 			}
-			dGen = dGen.WriteDirTree(tt.args.elem)
-			if !assertions.NoError(dGen.Err) {
+			f = f.WriteDirTree(
+				tt.args.elem,
+				tt.args.readMePath+".copy",
+				tt.args.templatePath,
+				".",
+			)
+			if !assertions.NoError(f.Err) {
 				return
 			}
 
@@ -113,10 +113,10 @@ func TestWriteDirTree(t *testing.T) {
 	}
 }
 
-func TestParseFileMap(t *testing.T) {
+func TestFormatter_ParseFileMap(t *testing.T) {
 	type (
 		want struct {
-			elem FileMap
+			elem diary.FileMap
 		}
 	)
 	tests := []struct {
@@ -128,7 +128,7 @@ func TestParseFileMap(t *testing.T) {
 			"success1",
 			"./testdata/ParseDirTree/data1",
 			want{
-				FileMap{
+				diary.FileMap{
 					"2018": {
 						"03": {
 							"02": "testdata/ParseDirTree/data1/2018/3/20180302.md",
@@ -149,7 +149,7 @@ func TestParseFileMap(t *testing.T) {
 			"success2",
 			"./testdata/ParseDirTree/data2",
 			want{
-				FileMap{
+				diary.FileMap{
 					"2020": {
 						"02": {
 							"03": "testdata/ParseDirTree/data2/20200203.md",
@@ -167,16 +167,18 @@ func TestParseFileMap(t *testing.T) {
 			},
 		},
 	}
+	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		assertions := assert.New(t)
-		fmap := ParseFileMap(tt.args)
+		f := diary.NewFormatter(logger)
+		fmap := f.ParseFileMap(tt.args)
 		assertions.Equal(tt.want.elem, fmap)
 	}
 }
 
-func TestFormatDir(t *testing.T) {
+func TestFormatter_FormatDir(t *testing.T) {
 	type args struct {
-		fMap  FileMap
+		fMap  diary.FileMap
 		files map[string]string
 		to    string
 		move  bool
@@ -188,7 +190,7 @@ func TestFormatDir(t *testing.T) {
 		{
 			"sucess1",
 			args{
-				FileMap{
+				diary.FileMap{
 					"2019": {
 						"12": {
 							"01": "testdata/FormatDir/input1/2019/12/20191201.md",
@@ -205,7 +207,7 @@ func TestFormatDir(t *testing.T) {
 		{
 			"sucess2",
 			args{
-				FileMap{
+				diary.FileMap{
 					"2018": {
 						"01": {
 							"01": "testdata/FormatDir/input2/2018/01/20180101.md",
@@ -234,7 +236,7 @@ func TestFormatDir(t *testing.T) {
 		{
 			"success_copy",
 			args{
-				FileMap{
+				diary.FileMap{
 					"2018": {
 						"01": {
 							"01": "testdata/FormatDir/input2/2018/01/20180101.md",
@@ -261,32 +263,28 @@ func TestFormatDir(t *testing.T) {
 			},
 		},
 	}
+	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
-			dGen := &DiayGeneretor{
-				to:     tt.args.to,
-				move:   tt.args.move,
-				logger: NewLogger(false),
-			}
+			f := diary.NewFormatter(logger)
 			for src, dst := range tt.args.files {
-				if err := dGen.copyFile(src, dst); !assertions.NoError(err) {
+				if err := diary.FormatterCopyfFile(f, src, dst); !assertions.NoError(err) {
 					return
 				}
 			}
-			assertions.NoError(dGen.FormatDir(tt.args.fMap).Err)
-			glog.Flush()
+			assertions.NoError(f.FormatDir(tt.args.fMap, tt.args.to, tt.args.move).Err)
 		})
 	}
 }
 
-func TestMap2Elem(t *testing.T) {
+func TestFormatter_Map2Elem(t *testing.T) {
 	type (
 		args struct {
-			fMap FileMap
+			fMap diary.FileMap
 		}
 		want struct {
-			elem TopElem
+			elem diary.TopElem
 		}
 	)
 	tests := []struct {
@@ -297,7 +295,7 @@ func TestMap2Elem(t *testing.T) {
 		{
 			"success1",
 			args{
-				FileMap{
+				diary.FileMap{
 					"2019": {
 						"12": {
 							"01": "test1/20191201.md",
@@ -315,14 +313,14 @@ func TestMap2Elem(t *testing.T) {
 				},
 			},
 			want{
-				TopElem{
-					Years: []YearElem{
+				diary.TopElem{
+					Years: []diary.YearElem{
 						{
 							Year: "2019",
-							Months: []MonthElem{
+							Months: []diary.MonthElem{
 								{
 									Month: "01",
-									Days: []DayElem{
+									Days: []diary.DayElem{
 										{
 											Day:  "20190101.md",
 											Path: "2019/01/20190101.md",
@@ -331,7 +329,7 @@ func TestMap2Elem(t *testing.T) {
 								},
 								{
 									Month: "12",
-									Days: []DayElem{
+									Days: []diary.DayElem{
 										{
 											Day:  "20191201.md",
 											Path: "2019/12/20191201.md",
@@ -346,10 +344,10 @@ func TestMap2Elem(t *testing.T) {
 						},
 						{
 							Year: "2018",
-							Months: []MonthElem{
+							Months: []diary.MonthElem{
 								{
 									Month: "02",
-									Days: []DayElem{
+									Days: []diary.DayElem{
 										{
 											Day:  "20180231.md",
 											Path: "2018/02/20180231.md",
@@ -363,10 +361,12 @@ func TestMap2Elem(t *testing.T) {
 			},
 		},
 	}
+	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
-			assertions.Equal(tt.want.elem, Map2Elem(tt.args.fMap))
+			f := diary.NewFormatter(logger)
+			assertions.Equal(tt.want.elem, f.Map2Elem(tt.args.fMap))
 		})
 	}
 }

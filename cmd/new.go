@@ -27,8 +27,8 @@ func newNewer() *newer {
 func NewCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "new",
-		Short: "Generate new diary",
-		Long:  "Generate new today diary from template file.",
+		Short: "Create new diary",
+		Long:  "New command create new today diary from template file.",
 	}
 
 	n := newNewer()
@@ -53,7 +53,7 @@ func NewCommand() *cobra.Command {
 func (n newer) New() error {
 	logger := diary.NewLogger(n.verbose)
 
-	generator := diary.NewGenerator(logger)
+	generator := diary.NewCreator(logger)
 	generator.NewDiary(n.tmplFile, n.dir, n.nameFormat)
 	return generator.Err
 }

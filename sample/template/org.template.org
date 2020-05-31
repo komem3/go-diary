@@ -1,4 +1,0 @@
-* diary record{{$base := .Base}}{{range $i, $yearElem := .Years}}
-** {{$yearElem.Year}}{{range $j, $monthElem := $yearElem.Months}}
-*** {{$monthElem.Month}}{{range $k, $dayElem := $monthElem.Days}}
-    - [[file:{{$base}}/{{$dayElem.Path}}][{{$dayElem.Day}}]]{{end}}{{end}}{{end}}

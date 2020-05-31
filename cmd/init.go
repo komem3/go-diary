@@ -24,7 +24,7 @@ func NewInitCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "init",
 		Short: "Initialize directory",
-		Long: `Make template directory.
+		Long: `Init command make template directory.
 You need to run this command before running other command.
 `,
 	}
@@ -35,7 +35,7 @@ You need to run this command before running other command.
 		"dir",
 		"d",
 		i.to,
-		"created template directory path",
+		"Created template directory path",
 	)
 	command.Flags().BoolVar(&i.verbose, "v", i.verbose, "Output verbose.")
 
@@ -52,7 +52,7 @@ func (i initializer) init() error {
 	logger.Debug(
 		"msg", "initialize template",
 	)
-	if err := diary.Initialize(logger, i.to, tmplDir, []string{mdTmp(), orgTmp(), diaryTmp()}); err != nil {
+	if err := diary.Initialize(logger, i.to, tmplDir, []string{mdTmp(), diaryTmp()}); err != nil {
 		return fmt.Errorf("initialize template: %w", err)
 	}
 	return nil

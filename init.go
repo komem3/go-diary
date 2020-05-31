@@ -1,6 +1,7 @@
 package diary
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -17,19 +18,19 @@ func Initialize(l Logger, dir string, tmplDir string, files []string) error {
 		if os.IsExist(err) {
 			yes, err := yesNoPrompt("Already exsits "+dir+". Do you overwrite this?", false)
 			if err != nil {
-				return err
+				return fmt.Errorf("overwrite question: %w", err)
 			}
 			if !yes {
 				return nil
 			}
 		} else {
-			return err
+			return fmt.Errorf("make template directory: %w", err)
 		}
 	}
 
 	statikFS, err := fs.New()
 	if err != nil {
-		return err
+		return fmt.Errorf("load static file data: %w", err)
 	}
 
 	for _, file := range files {
@@ -37,7 +38,7 @@ func Initialize(l Logger, dir string, tmplDir string, files []string) error {
 			"msg", "create "+file,
 		)
 		if err = createStaticFS(l, statikFS, filepath.Join(dir, file)); err != nil {
-			return err
+			return fmt.Errorf("create file %s: %w", file, err)
 		}
 	}
 	return nil
