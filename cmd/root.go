@@ -12,7 +12,7 @@ func NewRootCommand(commands ...*cobra.Command) *cobra.Command {
 This application can format your diary directory, and make index file.
 `,
 		Args:    cobra.MinimumNArgs(1),
-		Version: "0.8.0",
+		Version: "0.9.0",
 	}
 	rootCmd.AddCommand(
 		commands...,
