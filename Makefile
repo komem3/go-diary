@@ -1,7 +1,11 @@
 init: ## init
 	go mod tidy
+
 test: ## test
 	go test ./...
+
+gen: ## generate task
+	statik -src=./template
 
 build: build-linux	build-mac	build-win  ## do all build task
 

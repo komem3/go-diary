@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	command := cmd.NewRootCommand(cmd.NewInitCommand(), cmd.NewFormatCommand())
+	command := cmd.NewRootCommand(cmd.NewInitCommand(), cmd.NewFormatCommand(), cmd.NewCommand())
 	if err := command.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)

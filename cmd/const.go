@@ -11,3 +11,7 @@ func mdTmp() string {
 func orgTmp() string {
 	return filepath.Join(tmplDir, "org.template.org")
 }
+
+func diaryTmp() string {
+	return filepath.Join(tmplDir, "diary.template.md")
+}
