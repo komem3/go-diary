@@ -121,6 +121,9 @@ func stubIO(inStr string, fn func() error) error {
 	if err != nil {
 		return err
 	}
+	osIn := os.Stdin
 	os.Stdin = r
-	return fn()
+	err = fn()
+	os.Stdin = osIn
+	return err
 }

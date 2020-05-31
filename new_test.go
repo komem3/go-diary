@@ -13,11 +13,12 @@ import (
 
 func TestCreator_NewDiary(t *testing.T) {
 	type (
-		fields struct {
+		args struct {
 			dir        string
 			tmplFile   string
 			nameFormat string
 			now        time.Time
+			yes        string
 		}
 		want struct {
 			err         error
@@ -26,17 +27,18 @@ func TestCreator_NewDiary(t *testing.T) {
 		}
 	)
 	tests := []struct {
-		name   string
-		fields fields
-		want   want
+		name string
+		args args
+		want want
 	}{
 		{
 			"success1",
-			fields{
+			args{
 				dir:        "testdata/NewDiary/data1",
 				tmplFile:   "testdata/NewDiary/data1/diary1.template.md",
 				nameFormat: "20060102.md",
 				now:        time.Date(2019, 1, 1, 0, 0, 0, 0, time.Local),
+				yes:        "k\n",
 			},
 			want{
 				err:         nil,
@@ -46,11 +48,12 @@ func TestCreator_NewDiary(t *testing.T) {
 		},
 		{
 			"success2",
-			fields{
+			args{
 				dir:        "testdata/NewDiary/data2",
 				tmplFile:   "testdata/NewDiary/data2/diary2.template.md",
 				nameFormat: "20060102_sample.md",
 				now:        time.Date(2021, 12, 12, 12, 0, 0, 0, time.Local),
+				yes:        "k\n",
 			},
 			want{
 				err:         nil,
@@ -60,11 +63,12 @@ func TestCreator_NewDiary(t *testing.T) {
 		},
 		{
 			"error no tmplFile",
-			fields{
+			args{
 				dir:        "testdata/NewDiary/error",
 				tmplFile:   "tesdata/NewDiary/error/not_found.md",
 				nameFormat: "20060102_simple.md",
 				now:        time.Date(2021, 12, 12, 12, 0, 0, 0, time.Local),
+				yes:        "k\n",
 			},
 			want{
 				err:         errors.New("open template file: open tesdata/NewDiary/error/not_found.md: no such file or directory"),
@@ -74,16 +78,32 @@ func TestCreator_NewDiary(t *testing.T) {
 		},
 		{
 			"Ignore unregistered variables",
-			fields{
+			args{
 				dir:        "testdata/NewDiary/data3",
 				tmplFile:   "testdata/NewDiary/data3/ignore.template.md",
 				nameFormat: "20060102.md",
 				now:        time.Date(2018, 01, 12, 12, 0, 0, 0, time.Local),
+				yes:        "k\n",
 			},
 			want{
 				err:         nil,
 				outputPath:  "testdata/NewDiary/data3/20180112.md",
 				correctFile: "testdata/NewDiary/data3/correct.md",
+			},
+		},
+		{
+			"not overwrite",
+			args{
+				dir:        "testdata/NewDiary/data4",
+				tmplFile:   "testdata/NewDiary/data4/overwrite.template.md",
+				nameFormat: "20060102.md",
+				now:        time.Date(2018, 01, 12, 12, 0, 0, 0, time.Local),
+				yes:        "\n",
+			},
+			want{
+				err:         nil,
+				outputPath:  "testdata/NewDiary/data4/20180112.md",
+				correctFile: "testdata/NewDiary/data4/correct.md",
 			},
 		},
 	}
@@ -92,9 +112,15 @@ func TestCreator_NewDiary(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
 			creator := diary.NewCreator(logger)
-			creator.SetNowFunc(func() time.Time { return tt.fields.now })
+			creator.SetNowFunc(func() time.Time { return tt.args.now })
 
-			creator.NewDiary(tt.fields.tmplFile, tt.fields.dir, tt.fields.nameFormat)
+			err := stubIO(tt.args.yes, func() error {
+				creator.NewDiary(tt.args.tmplFile, tt.args.dir, tt.args.nameFormat)
+				return nil
+			})
+			if err != nil {
+				panic(err)
+			}
 			if tt.want.err != nil {
 				assertions.EqualError(creator.Err, tt.want.err.Error())
 				return

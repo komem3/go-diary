@@ -32,6 +32,18 @@ func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 		"msg", "start to generate diary",
 		"templateFile", tmplFile,
 	)
+	now := c.now()
+	diaryFile := now.Format(nameFormat)
+	if _, err := os.Stat(filepath.Join(dir, diaryFile)); !os.IsNotExist(err) {
+		yes, err := yesNoPrompt("Already exsits "+diaryFile+". Do you overwrite this?", false)
+		if err != nil {
+			c.Err = fmt.Errorf("overwrite question: %w", err)
+			return
+		}
+		if !yes {
+			return
+		}
+	}
 
 	temp, err := template.New(filepath.Base(tmplFile)).ParseFiles(tmplFile)
 	if err != nil {
@@ -47,7 +59,6 @@ func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 	}
 	defer CloseWithErrLog(c.logger, file)
 
-	now := c.now()
 	err = temp.Execute(file, map[string]interface{}{
 		"Year":    fmt.Sprintf("%d", now.Year()),
 		"Month":   fmt.Sprintf("%02d", now.Month()),
@@ -62,7 +73,6 @@ func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 		return
 	}
 
-	diaryFile := now.Format(nameFormat)
 	err = os.Rename(tmpName, filepath.Join(dir, diaryFile))
 	if err != nil {
 		c.Err = fmt.Errorf("move temp file to %s: %w", diaryFile, err)
