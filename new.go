@@ -24,7 +24,7 @@ func NewGenerator(l Logger) *Generator {
 }
 
 // NewDiary generate today diary
-func (g Generator) NewDiary(tmplFile, dir, nameFormat string) {
+func (g *Generator) NewDiary(tmplFile, dir, nameFormat string) {
 	if g.Err != nil {
 		return
 	}
@@ -35,14 +35,14 @@ func (g Generator) NewDiary(tmplFile, dir, nameFormat string) {
 
 	temp, err := template.New(filepath.Base(tmplFile)).ParseFiles(tmplFile)
 	if err != nil {
-		g.Err = err
+		g.Err = fmt.Errorf("open template file: %w", err)
 		return
 	}
 
 	tmpName := fmt.Sprintf("diary-%v-tmp.txt", g.now().UnixNano())
 	file, err := os.Create(tmpName)
 	if err != nil {
-		g.Err = err
+		g.Err = fmt.Errorf("create diary file: %w", err)
 		return
 	}
 	defer CloseWithErrLog(g.logger, file)
@@ -55,7 +55,7 @@ func (g Generator) NewDiary(tmplFile, dir, nameFormat string) {
 		"Weekday": now.Weekday().String(),
 	})
 	if err != nil {
-		g.Err = err
+		g.Err = fmt.Errorf("parse date information: %w", err)
 		if err = os.Remove(tmpName); err != nil {
 			g.logger.Error("err", err)
 		}
@@ -65,7 +65,7 @@ func (g Generator) NewDiary(tmplFile, dir, nameFormat string) {
 	diaryFile := now.Format(nameFormat)
 	err = os.Rename(tmpName, filepath.Join(dir, diaryFile))
 	if err != nil {
-		g.Err = err
+		g.Err = fmt.Errorf("move temp file to %s: %w", diaryFile, err)
 		return
 	}
 	g.logger.Debug(

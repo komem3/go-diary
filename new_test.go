@@ -1,6 +1,7 @@
 package diary_test
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -55,6 +56,34 @@ func TestGenerator_NewDiary(t *testing.T) {
 				err:         nil,
 				outputPath:  "testdata/NewDiary/data2/20211212_sample.md",
 				correctFile: "testdata/NewDiary/data2/correct.md",
+			},
+		},
+		{
+			"error no tmplFile",
+			fields{
+				dir:        "testdata/NewDiary/error",
+				tmplFile:   "tesdata/NewDiary/error/not_found.md",
+				nameFormat: "20060102_simple.md",
+				now:        time.Date(2021, 12, 12, 12, 0, 0, 0, time.Local),
+			},
+			want{
+				err:         errors.New("open template file: open tesdata/NewDiary/error/not_found.md: no such file or directory"),
+				outputPath:  "",
+				correctFile: "",
+			},
+		},
+		{
+			"Ignore unregistered variables",
+			fields{
+				dir:        "testdata/NewDiary/data3",
+				tmplFile:   "testdata/NewDiary/data3/ignore.template.md",
+				nameFormat: "20060102.md",
+				now:        time.Date(2018, 01, 12, 12, 0, 0, 0, time.Local),
+			},
+			want{
+				err:         nil,
+				outputPath:  "testdata/NewDiary/data3/20180112.md",
+				correctFile: "testdata/NewDiary/data3/correct.md",
 			},
 		},
 	}
