@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/komem3/diary/cmd"
-	_ "github.com/komem3/diary/statik"
+	"github.com/komem3/go-diary/cmd"
+	_ "github.com/komem3/go-diary/statik"
 )
 
 func main() {

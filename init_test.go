@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/komem3/diary"
-	_ "github.com/komem3/diary/statik"
+	"github.com/komem3/go-diary"
+	_ "github.com/komem3/go-diary/statik"
 	"github.com/stretchr/testify/assert"
 )
 

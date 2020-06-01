@@ -1,4 +1,4 @@
-module github.com/komem3/diary
+module github.com/komem3/go-diary
 
 go 1.14
 

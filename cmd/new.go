@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/komem3/diary"
+	"github.com/komem3/go-diary"
 	"github.com/spf13/cobra"
 )
 
