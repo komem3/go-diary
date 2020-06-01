@@ -80,7 +80,7 @@ $ cat 20200531.md
 ### Install with go tool
 
 ```sh
-go get github.com/komem3/diary/cmd/diary
+go get github.com/komem3/go-diary/cmd/diary
 ```
 
 ## Lisesnce
