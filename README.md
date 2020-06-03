@@ -26,6 +26,14 @@ Flags:
   Use "diary [command] --help" for more information about a command.
 ```
 
+## Install
+
+### Install with go tool
+
+```sh
+go get github.com/komem3/go-diary/cmd/diary
+```
+
 
 ## Target file
 
@@ -75,13 +83,25 @@ $ cat 20200531.md
 ```
 
 
-## Install
+## Template variables
 
-### Install with go tool
+### top.template.md
 
-```sh
-go get github.com/komem3/go-diary/cmd/diary
-```
+- Base: Base path.
+- Years: Slice of YearElem.
+  - Year
+  - Months: Slice of MonthElem.
+    - Month
+    - Days: Slice of DayElem.
+      - Day
+      - Path: Path from base.
+
+### diary.template.md
+
+- Year
+- Month
+- Day
+- Weekday
 
 ## Lisesnce
 
