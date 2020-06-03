@@ -3,6 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
+	"time"
 
 	"github.com/komem3/go-diary"
 	"github.com/spf13/cobra"
@@ -11,6 +14,7 @@ import (
 type newer struct {
 	tmplFile   string
 	dir        string
+	date       string
 	nameFormat string
 	verbose    bool
 }
@@ -20,6 +24,7 @@ func newNewer() *newer {
 		verbose:    false,
 		tmplFile:   "template/diary.template.md",
 		dir:        ".",
+		date:       "today",
 		nameFormat: "20060102.md",
 	}
 }
@@ -35,8 +40,13 @@ func NewCommand() *cobra.Command {
 	command.Flags().StringVar(&n.tmplFile, "tmpl", n.tmplFile,
 		"Parse template file.",
 	)
-	command.Flags().StringVarP(&n.dir, "dir", "d", n.dir,
+	command.Flags().StringVar(&n.dir, "dir", n.dir,
 		"Destination directory.",
+	)
+	command.Flags().StringVarP(&n.date, "date", "d", n.date,
+		`Date of making diary.
+Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).
+`,
 	)
 	command.Flags().StringVarP(&n.nameFormat, "format", "f", n.nameFormat,
 		"File name format.\nRefer to https://golang.org/src/time/format.go",
@@ -54,6 +64,44 @@ func (n newer) New() error {
 	logger := diary.NewLogger(n.verbose)
 
 	generator := diary.NewCreator(logger)
+	if err := n.formatAndSetNow(generator); err != nil {
+		return err
+	}
 	generator.NewDiary(n.tmplFile, n.dir, n.nameFormat)
 	return generator.Err
+}
+
+func (n newer) formatAndSetNow(creator *diary.Creator) error {
+	switch n.date {
+	case "today", "t":
+		creator.SetNowFunc(func() time.Time { return time.Now() })
+		return nil
+	case "yesterday", "y":
+		creator.SetNowFunc(func() time.Time { return time.Now().AddDate(0, 0, -1) })
+		return nil
+	case "tomorrow", "tm":
+		creator.SetNowFunc(func() time.Time { return time.Now().AddDate(0, 0, 1) })
+		return nil
+	}
+
+	re := regexp.MustCompile(`^((1|2)[0-9]{3})/([0-9]{1,2})/([0-9]{1,2})$`)
+	submathes := re.FindStringSubmatch(n.date)
+	if len(submathes) == 0 {
+		return nil
+	}
+
+	year, err := strconv.Atoi(submathes[1])
+	if err != nil {
+		return err
+	}
+	month, err := strconv.Atoi(submathes[3])
+	if err != nil {
+		return err
+	}
+	day, err := strconv.Atoi(submathes[4])
+	if err != nil {
+		return err
+	}
+	creator.SetNowFunc(func() time.Time { return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local) })
+	return nil
 }

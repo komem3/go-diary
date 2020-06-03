@@ -23,6 +23,11 @@ func NewCreator(l Logger) *Creator {
 	}
 }
 
+// SetNowFunc sets the function that returns the current time.
+func (c *Creator) SetNowFunc(now func() time.Time) {
+	c.now = now
+}
+
 // NewDiary generate today diary
 func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 	if c.Err != nil {
