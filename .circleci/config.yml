@@ -69,15 +69,16 @@ jobs:
       - load-source-cache
       - checkout
       - save-source-cache
-      - go-mod-download-cache
-      - save-go-cache
+      # Comment out because it takes more time to cache.
+      # - go-mod-download-cache
+      # - save-go-cache
 
   unit_test:
     executor: go-exec
     steps:
       - load-source-cache
       - checkout
-      - go-mod-download-cache
+      # - go-mod-download-cache
       - run:
           command: make test/unit
           name: exec unit test
