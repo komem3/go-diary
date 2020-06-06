@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -o noexec
+set -o nounset
 set -o errexit
 
 dir=${PWD##*/}
