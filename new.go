@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-// Creator generate file
+// Creator generate file.
 type Creator struct {
 	logger Logger
 	now    func() time.Time
 	Err    error
 }
 
-// NewCreator generate Creator
+// NewCreator generate Creator.
 func NewCreator(l Logger) *Creator {
 	return &Creator{
 		logger: l,
@@ -28,7 +28,7 @@ func (c *Creator) SetNowFunc(now func() time.Time) {
 	c.now = now
 }
 
-// NewDiary generate today diary
+// NewDiary generate today diary.
 func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 	if c.Err != nil {
 		return

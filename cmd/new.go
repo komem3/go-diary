@@ -74,7 +74,7 @@ func (n newer) New() error {
 func (n newer) formatAndSetNow(creator *diary.Creator) error {
 	switch n.date {
 	case "today", "t":
-		creator.SetNowFunc(func() time.Time { return time.Now() })
+		creator.SetNowFunc(time.Now)
 		return nil
 	case "yesterday", "y":
 		creator.SetNowFunc(func() time.Time { return time.Now().AddDate(0, 0, -1) })

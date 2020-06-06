@@ -1,7 +1,6 @@
 package diary_test
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -21,7 +20,7 @@ func TestCreator_NewDiary(t *testing.T) {
 			yes        string
 		}
 		want struct {
-			err         error
+			errMsg      string
 			outputPath  string
 			correctFile string
 		}
@@ -41,7 +40,6 @@ func TestCreator_NewDiary(t *testing.T) {
 				yes:        "k\n",
 			},
 			want{
-				err:         nil,
 				outputPath:  "testdata/NewDiary/data1/20190101.md",
 				correctFile: "testdata/NewDiary/data1/correct.md",
 			},
@@ -56,7 +54,6 @@ func TestCreator_NewDiary(t *testing.T) {
 				yes:        "k\n",
 			},
 			want{
-				err:         nil,
 				outputPath:  "testdata/NewDiary/data2/20211212_sample.md",
 				correctFile: "testdata/NewDiary/data2/correct.md",
 			},
@@ -71,7 +68,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				yes:        "k\n",
 			},
 			want{
-				err:         errors.New("open template file: open tesdata/NewDiary/error/not_found.md: no such file or directory"),
+				errMsg:      "open template file: open tesdata/NewDiary/error/not_found.md: no such file or directory",
 				outputPath:  "",
 				correctFile: "",
 			},
@@ -86,7 +83,6 @@ func TestCreator_NewDiary(t *testing.T) {
 				yes:        "k\n",
 			},
 			want{
-				err:         nil,
 				outputPath:  "testdata/NewDiary/data3/20180112.md",
 				correctFile: "testdata/NewDiary/data3/correct.md",
 			},
@@ -101,7 +97,6 @@ func TestCreator_NewDiary(t *testing.T) {
 				yes:        "\n",
 			},
 			want{
-				err:         nil,
 				outputPath:  "testdata/NewDiary/data4/20180112.md",
 				correctFile: "testdata/NewDiary/data4/correct.md",
 			},
@@ -121,8 +116,8 @@ func TestCreator_NewDiary(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			if tt.want.err != nil {
-				assertions.EqualError(creator.Err, tt.want.err.Error())
+			if tt.want.errMsg != "" {
+				assertions.EqualError(creator.Err, tt.want.errMsg)
 				return
 			}
 			if !assertions.NoError(creator.Err) {

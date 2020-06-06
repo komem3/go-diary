@@ -19,14 +19,14 @@ var (
 
 type FileMap map[Year]map[Month]map[Day]string
 
-// Formatter is generator diary
+// Formatter is generator diary.
 type Formatter struct {
 	logger Logger
 	Err    error
 	now    func() time.Time
 }
 
-// NewFormatter generate Formatter
+// NewFormatter generate Formatter.
 func NewFormatter(logger Logger) *Formatter {
 	return &Formatter{
 		logger: logger,
@@ -34,7 +34,7 @@ func NewFormatter(logger Logger) *Formatter {
 	}
 }
 
-// WriteDirTree write directory tree
+// WriteDirTree write directory tree.
 func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string) *Formatter {
 	if f.Err != nil {
 		return f
@@ -67,7 +67,7 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 			reader := bufio.NewReader(file)
 			for {
 				line, err := reader.ReadString('\n')
-				if err == io.EOF || string(line) == "# diary record\n" {
+				if err == io.EOF || line == "# diary record\n" {
 					break
 				}
 				if err != nil {
@@ -108,7 +108,7 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 	return f
 }
 
-// ParseFileMap analys dir and parse FileMap
+// ParseFileMap analys dir and parse FileMap.
 func (f Formatter) ParseFileMap(root string) FileMap {
 	re := regexp.MustCompile(`([0-9]{4})([0-9]{2})([0-9]{2}).*\.[a-zA-Z]+$`)
 	fmap := make(FileMap)
@@ -136,7 +136,7 @@ func (f Formatter) ParseFileMap(root string) FileMap {
 	return fmap
 }
 
-// FormatDir format directory
+// FormatDir format directory.
 func (f *Formatter) FormatDir(fMap FileMap, to string, move bool) *Formatter {
 	if f.Err != nil {
 		return f
@@ -203,7 +203,7 @@ func (f *Formatter) FormatDir(fMap FileMap, to string, move bool) *Formatter {
 	return f
 }
 
-// Map2Elem convert FileMap to TopElem
+// Map2Elem convert FileMap to TopElem.
 func (f Formatter) Map2Elem(fMap FileMap) (elem TopElem) {
 	var i, j int
 	for y, yMap := range fMap {

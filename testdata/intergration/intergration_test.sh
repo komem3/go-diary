@@ -35,6 +35,4 @@ if [ $dir != "mydiary" ]; then
     exit 1
 fi
 
-tree
-
 echo 'Intergration test is success!'
