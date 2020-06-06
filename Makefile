@@ -1,16 +1,17 @@
-
+help: ## help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 init: ## init
 	go mod download
 
-test: ## test
+test/unit: ## exec unit test
 	go test ./...
 
-test/intergration: ## intergration test
+test/intergration: ## exec intergration test
 	cd ./testdata/intergration && \
 	./intergration_test.sh
 
-gen: ## generate task
+gen: ## generate files
 	statik -src=./template
 
 install: ## install diary
