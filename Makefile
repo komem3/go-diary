@@ -1,14 +1,23 @@
+
+
 init: ## init
-	go mod tidy
+	go mod download
 
 test: ## test
 	go test ./...
+
+test/intergration: ## intergration test
+	cd ./testdata/intergration && \
+	./intergration_test.sh
 
 gen: ## generate task
 	statik -src=./template
 
 install: ## install diary
 	cd cmd/diary && go install .
+
+clean: ## clean
+	go clean && go mod tidy
 
 build: build-linux	build-mac	build-win  ## do all build task
 
