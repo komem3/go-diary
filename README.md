@@ -1,7 +1,6 @@
 # go-diary
 
-go-diary analys and format directory, and rewrite README.md which is written structure directory.
-
+go-diary is a tool for managing diaries.
 
 ## Usage
 
@@ -34,13 +33,12 @@ Flags:
 go get github.com/komem3/go-diary/cmd/diary
 ```
 
-
 ## Target file
 
 Target diary file is `YYYYMMDD*.*`.
-- good example: *20200102.md*, *19990912_test.md*, *19990912.txt*
-- bad example: *diary_20111102.md*, *202011.md*
 
+- good example: `20200102.md`, `19990912_test.md`, `19990912.txt`
+- bad example: `diary_20111102.md`, `202011.md`
 
 ## Sample case
 
@@ -82,32 +80,30 @@ $ cat 20200531.md
 2020/05/31 (Sunday)
 ```
 
-
 ## Template variables
 
-### top.template.md
+### `top.template.md`
 
 - Base: Base path.
-- Years: Slice of YearElem.
+- Years: Slice of year element.
   - Year
-  - Months: Slice of MonthElem.
+  - Months: Slice of month element.
     - Month
-    - Days: Slice of DayElem.
+    - Days: Slice of day element.
       - Day
       - Path: Path from base.
 
-### diary.template.md
+### `diary.template.md`
 
 - Year
 - Month
 - Day
 - Weekday
 
-## Lisesnce
+## Licence
 
 MIT
 
 ## Author
 
 komem3
-

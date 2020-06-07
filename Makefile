@@ -1,13 +1,18 @@
 help: ## help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-init: ## init
-	go mod download
+init: ## init (Require to install golangci-lint and precommit manually.)
+	go mod download && \
+	go get golang.org/x/tools/cmd/goimports && \
+	rm -r node_modules && \
+	npm ci && \
+	pre-commit install
 
-test/unit: ## exec unit test
+# Test
+test: test_unit test_intergration ## exec unit test and intergration test
+test_unit: ## exec unit test
 	go test ./...
-
-test/intergration: ## exec intergration test
+test_intergration: ## exec intergration test
 	cd ./testdata/intergration && \
 	./intergration_test.sh
 
@@ -20,8 +25,24 @@ install: ## install diary
 clean: ## clean
 	go clean && go mod tidy
 
-build: build-linux	build-mac	build-win  ## do all build task
+# Static analysis
+fmt_lint: fmt lint ## format and lint
+fmt: ## format source code
+	pre-commit run --all-files
+lint: lint_go lint_md ## lint source code
+lint_go: ## go lint
+	golangci-lint run ./... --disable-all \
+	-E govet -E errcheck -E staticcheck -E unused -E gosimple \
+	-E structcheck -E varcheck -E ineffassign -E deadcode -E typecheck \
+	-E golint -E interfacer -E unconvert -E dupl -E goconst \
+	-E asciicheck -E gofmt -E goimports -E misspell -E lll -E unparam \
+	-E prealloc -E gocritic -E gochecknoinits -E whitespace -E gomnd \
+	-E goerr113 -E gomodguard -E godot -E testpackage
+lint_md: ## markdown lint
+	npm run lint
 
+# Build
+build: build-linux	build-mac	build-win  ## do all build task
 build-linux: ## build linux 64bit binary
 	GOOS=linux GOARCH=amd64 go build -o build/linux-amd64/diary ./cmd/diary/main.go
 build-mac: ## build mac os 64bit binary

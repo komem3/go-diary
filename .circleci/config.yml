@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  node: circleci/node@3.0
+
 executors:
   go-exec:
     description: |
@@ -33,35 +36,6 @@ commands:
           paths:
             - ".git"
 
-  load-go-cache:
-    description: Load chached go modules.
-    steps:
-      - restore_cache:
-          keys:
-            - go-{{ .Environment.CACHE_VERSION }}-{{ checksum "go.sum" }}
-            - go-{{ .Environment.CACHE_VERSION }}-
-
-  save-go-cache:
-    description: Save go modules to cache.
-    steps:
-      - save_cache:
-          paths:
-            - /home/circleci/go/pkg/mod
-          key: go-{{ .Environment.CACHE_VERSION }}-{{ checksum "go.sum" }}
-
-  go-mod-download:
-     description: Run 'go mod download'.
-     steps:
-       - run:
-           command: go mod download
-           name: go mod download.
-
-  go-mod-download-cache:
-     description: Load chache and Download  Go modules.
-     steps:
-       - load-go-cache
-       - go-mod-download
-
 jobs:
   prepare_source:
     executor: go-exec
@@ -69,18 +43,14 @@ jobs:
       - load-source-cache
       - checkout
       - save-source-cache
-      # Comment out because it takes more time to cache.
-      # - go-mod-download-cache
-      # - save-go-cache
 
   unit_test:
     executor: go-exec
     steps:
       - load-source-cache
       - checkout
-      # - go-mod-download-cache
       - run:
-          command: make test/unit
+          command: make test_unit
           name: exec unit test
 
   intergration_test:
@@ -89,7 +59,7 @@ jobs:
       - load-source-cache
       - checkout
       - run:
-          command: make test/intergration
+          command: make test_intergration
           name: exec intergration test
 
   go_lint:
@@ -98,15 +68,21 @@ jobs:
       - load-source-cache
       - checkout
       - run:
-          name: exec golangci-lint
-          command: |
-            golangci-lint run ./... --disable-all \
-            -E govet -E errcheck -E staticcheck -E unused -E gosimple \
-            -E structcheck -E varcheck -E ineffassign -E deadcode -E typecheck \
-            -E golint -E interfacer -E unconvert -E dupl -E goconst \
-            -E asciicheck -E gofmt -E goimports -E misspell -E lll -E unparam \
-            -E prealloc -E gocritic -E gochecknoinits -E whitespace -E gomnd \
-            -E goerr113 -E gomodguard -E godot -E testpackage
+          name: exec go lint
+          command: make lint_go
+
+  md_lint:
+    executor: node/default
+    steps:
+      - load-source-cache
+      - checkout
+      - node/install-packages:
+          cache-version: v1
+          cache-path: ~/.npm
+          with-cache: true
+      - run:
+          name: exec markdown lint
+          command: make lint_md
 
 workflows:
   check_code:
@@ -119,5 +95,8 @@ workflows:
           requires:
             - prepare_source
       - go_lint:
+          requires:
+            - prepare_source
+      - md_lint:
           requires:
             - prepare_source

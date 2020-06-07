@@ -1,1 +1,1 @@
-{{.Year}}/{{.Month}}/{{.Day}} ({{.Weekday}})
+# {{.Year}}/{{.Month}}/{{.Day}} ({{.Weekday}})
