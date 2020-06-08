@@ -26,9 +26,6 @@ clean: ## clean
 	go clean && go mod tidy
 
 # Static analysis
-fmt_lint: fmt lint ## format and lint
-fmt: ## format source code
-	pre-commit run --all-files
 lint: lint_go lint_md ## lint source code
 lint_go: ## go lint
 	golangci-lint run ./... --disable-all \
