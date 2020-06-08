@@ -18,36 +18,10 @@ executors:
     docker:
       - image: golangci/golangci-lint:v1.27.0
 
-commands:
-  load-source-cache:
-    description: Load chached source codes.
-    steps:
-      - restore_cache:
-          keys:
-            - source-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}
-            - source-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
-            - source-{{ .Environment.CACHE_VERSION }}-
-
-  save-source-cache:
-    description: Save chached source codes.
-    steps:
-      - save_cache:
-          key: source-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - ".git"
-
 jobs:
-  prepare_source:
-    executor: go-exec
-    steps:
-      - load-source-cache
-      - checkout
-      - save-source-cache
-
   unit_test:
     executor: go-exec
     steps:
-      - load-source-cache
       - checkout
       - run:
           command: make test_unit
@@ -56,7 +30,6 @@ jobs:
   intergration_test:
     executor: go-exec
     steps:
-      - load-source-cache
       - checkout
       - run:
           command: make test_intergration
@@ -65,7 +38,6 @@ jobs:
   go_lint:
     executor: golangci-lint
     steps:
-      - load-source-cache
       - checkout
       - run:
           name: exec go lint
@@ -74,10 +46,9 @@ jobs:
   md_lint:
     executor: node/default
     steps:
-      - load-source-cache
       - checkout
       - node/install-packages:
-          cache-version: v1
+          cache-version: "{{ .Environment.CACHE_VERSION }}"
           cache-path: ~/.npm
           with-cache: true
       - run:
@@ -87,16 +58,7 @@ jobs:
 workflows:
   check_code:
     jobs:
-      - prepare_source
-      - unit_test:
-          requires:
-            - prepare_source
-      - intergration_test:
-          requires:
-            - prepare_source
-      - go_lint:
-          requires:
-            - prepare_source
-      - md_lint:
-          requires:
-            - prepare_source
+      - unit_test
+      - intergration_test
+      - go_lint
+      - md_lint
