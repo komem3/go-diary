@@ -1,12 +1,12 @@
 help: ## help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-init: ## init (Require to install golangci-lint and precommit manually.)
+init: ## init
 	go mod download && \
 	go get golang.org/x/tools/cmd/goimports && \
 	rm -r node_modules && \
 	npm ci && \
-	pre-commit install
+	cp ./hack/precommit.sh .git/hooks/pre-commit
 
 # Test
 test: test_unit test_intergration ## exec unit test and intergration test
