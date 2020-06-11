@@ -13,6 +13,7 @@ test: test_unit test_intergration ## exec unit test and intergration test
 test_unit: ## exec unit test
 	go test ./...
 test_intergration: ## exec intergration test
+	make install && \
 	cd ./testdata/intergration && \
 	./intergration_test.sh
 

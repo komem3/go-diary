@@ -37,7 +37,6 @@ Available Commands:
 
 Flags:
   -h, --help      help for diary
-  -v, --version   version for diary
 
   Use "diary [command] --help" for more information about a command.
 ```

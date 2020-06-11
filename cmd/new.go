@@ -53,22 +53,26 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).
 	)
 
 	command.Run = func(cmd *cobra.Command, args []string) {
-		if err := n.New(); err != nil {
+		diaryPath, err := n.New()
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
+			return
 		}
+		fmt.Fprintf(os.Stdout, "generated %s\n", diaryPath)
 	}
 	return command
 }
 
-func (n newer) New() error {
+func (n newer) New() (string, error) {
 	logger := diary.NewLogger(n.verbose)
 
 	generator := diary.NewCreator(logger)
 	if err := n.formatAndSetNow(generator); err != nil {
-		return err
+		return "", err
 	}
-	generator.NewDiary(n.tmplFile, n.dir, n.nameFormat)
-	return generator.Err
+
+	diaryPath := generator.NewDiary(n.tmplFile, n.dir, n.nameFormat)
+	return diaryPath, generator.Err
 }
 
 func (n newer) formatAndSetNow(creator *diary.Creator) error {
