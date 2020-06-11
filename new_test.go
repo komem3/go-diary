@@ -17,7 +17,7 @@ func TestCreator_NewDiary(t *testing.T) {
 			tmplFile   string
 			nameFormat string
 			now        time.Time
-			yes        string
+			yes        bool
 		}
 		want struct {
 			errMsg      string
@@ -37,7 +37,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				tmplFile:   "testdata/NewDiary/data1/diary1.template.md",
 				nameFormat: "20060102.md",
 				now:        time.Date(2019, 1, 1, 0, 0, 0, 0, time.Local),
-				yes:        "k\n",
+				yes:        true,
 			},
 			want{
 				outputPath:  "testdata/NewDiary/data1/20190101.md",
@@ -51,7 +51,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				tmplFile:   "testdata/NewDiary/data2/diary2.template.md",
 				nameFormat: "20060102_sample.md",
 				now:        time.Date(2021, 12, 12, 12, 0, 0, 0, time.Local),
-				yes:        "k\n",
+				yes:        true,
 			},
 			want{
 				outputPath:  "testdata/NewDiary/data2/20211212_sample.md",
@@ -65,7 +65,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				tmplFile:   "tesdata/NewDiary/error/not_found.md",
 				nameFormat: "20060102_simple.md",
 				now:        time.Date(2021, 12, 12, 12, 0, 0, 0, time.Local),
-				yes:        "k\n",
+				yes:        true,
 			},
 			want{
 				errMsg:      "open template file: open tesdata/NewDiary/error/not_found.md: no such file or directory",
@@ -80,7 +80,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				tmplFile:   "testdata/NewDiary/data3/ignore.template.md",
 				nameFormat: "20060102.md",
 				now:        time.Date(2018, 01, 12, 12, 0, 0, 0, time.Local),
-				yes:        "k\n",
+				yes:        true,
 			},
 			want{
 				outputPath:  "testdata/NewDiary/data3/20180112.md",
@@ -94,7 +94,7 @@ func TestCreator_NewDiary(t *testing.T) {
 				tmplFile:   "testdata/NewDiary/data4/overwrite.template.md",
 				nameFormat: "20060102.md",
 				now:        time.Date(2018, 01, 12, 12, 0, 0, 0, time.Local),
-				yes:        "\n",
+				yes:        false,
 			},
 			want{
 				outputPath:  "testdata/NewDiary/data4/20180112.md",
@@ -109,8 +109,13 @@ func TestCreator_NewDiary(t *testing.T) {
 			creator := diary.NewCreator(logger)
 			creator.SetNowFunc(func() time.Time { return tt.args.now })
 
-			err := stubIO(tt.args.yes, func() error {
-				creator.NewDiary(tt.args.tmplFile, tt.args.dir, tt.args.nameFormat)
+			err := stubIO(yesnoStr(tt.args.yes), func() error {
+				path := creator.NewDiary(tt.args.tmplFile, tt.args.dir, tt.args.nameFormat)
+				if tt.args.yes {
+					assertions.Equal(tt.want.outputPath, path)
+				} else {
+					assertions.Empty(path)
+				}
 				return nil
 			})
 			if err != nil {
@@ -139,4 +144,11 @@ func TestCreator_NewDiary(t *testing.T) {
 			assertions.Equal(string(correct), string(output))
 		})
 	}
+}
+
+func yesnoStr(yes bool) string {
+	if yes {
+		return "k\n"
+	}
+	return "\n"
 }

@@ -29,7 +29,7 @@ func (c *Creator) SetNowFunc(now func() time.Time) {
 }
 
 // NewDiary generate today diary.
-func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
+func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) (filePath string) {
 	if c.Err != nil {
 		return
 	}
@@ -87,4 +87,6 @@ func (c *Creator) NewDiary(tmplFile, dir, nameFormat string) {
 		"msg", "end to generate diary",
 		"file", diaryFile,
 	)
+
+	return filepath.Join(dir, diaryFile)
 }
