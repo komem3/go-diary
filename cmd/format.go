@@ -30,7 +30,7 @@ func NewFormatCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "format",
 		Short: "Format directory",
-		Long: `Format command analys and format directory.
+		Long: `Format command format directory.
 After format directory, it write directory structure to target file.
 `,
 	}

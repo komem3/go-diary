@@ -1,3 +1,4 @@
 *.template.md
 testdata/*
 node_modules/*
+cmd/doc/*

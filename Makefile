@@ -18,7 +18,8 @@ test_intergration: ## exec intergration test
 	./intergration_test.sh
 
 gen: ## generate files
-	statik -src=./template
+	statik -src=./template && \
+	cd cmd/doc/ && go run main.go
 
 install: ## install diary
 	cd cmd/diary && go install .
