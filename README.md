@@ -6,9 +6,6 @@ Go-diary is a tool for managing diaries.
 
 - [Go-diary](#go-diary)
   - [Usage](#usage)
-    - [Initialize](#initialize)
-    - [New](#new)
-    - [Format](#format)
   - [Install](#install)
     - [Install with go tool](#install-with-go-tool)
   - [Target File](#target-file)
@@ -21,83 +18,10 @@ Go-diary is a tool for managing diaries.
 
 ## Usage
 
-```sh
-$ diary -h
-Diary is a CLI libray for managing your diary.
-This application can format your diary directory, and make index file.
-
-Usage:
-  diary [command]
-
-Available Commands:
-  format      Format directory
-  help        Help about any command
-  init        Initialize directory
-  new         Generate new diary
-
-Flags:
-  -h, --help      help for diary
-
-  Use "diary [command] --help" for more information about a command.
-```
-
-### Initialize
-
-```sh
-$ diary init -h
-Init command make template directory.
-You need to run this command before running other command.
-
-Usage:
-diary init [flags]
-
-Flags:
--d, --dir string   Created template directory path (default ".")
--h, --help         help for init
---v            Output verbose.
-```
-
-### New
-
-```sh
-$ diary new -h
-New command create new today diary from template file.
-
-Usage:
-diary new [flags]
-
-Flags:
--d, --date string     Date of making diary.
-Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).
-(default "today")
---dir string      Destination directory. (default ".")
--f, --format string   File name format.
-Refer to https://golang.org/src/time/format.go (default "20060102.md")
--h, --help            help for new
---tmpl string     Parse template file. (default "template/diary.template.md")
-```
-
-### Format
-
-```sh
-$ diary format -h
-Format command analys and format directory.
-After format directory, it write directory structure to target file.
-
-Usage:
-diary format [flags]
-
-Flags:
---copyDir string   Format directory.
-When this option is difference from 'dir', all file will copy to 'copyDir'.
--d, --dir string       Analysis directory. (default ".")
--f, --file string      Write file. (default "./README.md")
--h, --help             help for format
---tmpl string      Parse template file. (default "template/top.template.md")
---v                Output verbose.
-```
-
-
+- [diary](./cmd/doc/diary.md)
+  - [init](./cmd/doc/diary_init.md)
+  - [new](./cmd/doc/diary_new.md)
+  - [format](./cmd/doc/diary_format.md)
 
 ## Install
 
