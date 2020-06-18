@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/komem3/go-diary"
+	"github.com/komem3/go-diary/utils"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type newer struct {
@@ -38,7 +40,7 @@ func NewCommand() *cobra.Command {
 
 	n := newNewer()
 	command.Flags().StringVar(&n.tmplFile, "tmpl", n.tmplFile,
-		"Parse template file.",
+		"Parse template file.\nThe environment variable DIARY_TEMPLATE is set.",
 	)
 	command.Flags().StringVar(&n.dir, "dir", n.dir,
 		"Destination directory.",
@@ -51,6 +53,9 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).
 	command.Flags().StringVarP(&n.nameFormat, "format", "f", n.nameFormat,
 		"File name format.\nRefer to https://golang.org/src/time/format.go",
 	)
+
+	utils.ErrorPanic(viper.BindPFlag("tmpl", command.Flags().Lookup("tmpl")))
+	utils.ErrorPanic(viper.BindEnv("tmpl", "DIARY_TEMPLATE"))
 
 	command.Run = func(cmd *cobra.Command, args []string) {
 		diaryPath, err := n.New()

@@ -20,7 +20,8 @@ diary new [flags]
   -f, --format string   File name format.
                         Refer to https://golang.org/src/time/format.go (default "20060102.md")
   -h, --help            help for new
-      --tmpl string     Parse template file. (default "template/diary.template.md")
+      --tmpl string     Parse template file.
+                        The environment variable DIARY_TEMPLATE is set. (default "template/diary.template.md")
 ```
 
 ### SEE ALSO
