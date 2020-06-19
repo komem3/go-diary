@@ -19,22 +19,17 @@ executors:
       - image: golangci/golangci-lint:v1.27.0
 
 jobs:
-  unit_test:
+  test:
     executor: go-exec
     steps:
       - checkout
       - run:
           command: make test_unit
           name: exec unit test
-
-  intergration_test:
-    executor: go-exec
-    steps:
-      - checkout
       - run:
           command: make test_intergration
           name: exec intergration test
-
+  
   go_lint:
     executor: golangci-lint
     steps:
@@ -58,7 +53,6 @@ jobs:
 workflows:
   check_code:
     jobs:
-      - unit_test
-      - intergration_test
+      - test
       - go_lint
       - md_lint

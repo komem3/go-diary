@@ -39,23 +39,23 @@ func NewCommand() *cobra.Command {
 	}
 
 	n := newNewer()
-	command.Flags().StringVar(&n.tmplFile, "tmpl", n.tmplFile,
-		"Parse template file.\nThe environment variable DIARY_TEMPLATE is set.",
-	)
 	command.Flags().StringVar(&n.dir, "dir", n.dir,
 		"Destination directory.",
 	)
 	command.Flags().StringVarP(&n.date, "date", "d", n.date,
 		`Date of making diary.
-Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).
-`,
+Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 	)
+	command.Flags().BoolVar(&n.verbose, "v", n.verbose, "Output verbose.")
 	command.Flags().StringVarP(&n.nameFormat, "format", "f", n.nameFormat,
 		"File name format.\nRefer to https://golang.org/src/time/format.go",
 	)
-
-	utils.ErrorPanic(viper.BindPFlag("tmpl", command.Flags().Lookup("tmpl")))
-	utils.ErrorPanic(viper.BindEnv("tmpl", "DIARY_TEMPLATE"))
+	command.Flags().String("tmpl", n.tmplFile,
+		"Parse template file.\nThe environment variable DIARY_TEMPLATE is set.",
+	)
+	utils.ErrorPanic(viper.BindPFlag("tmplFile", command.Flags().Lookup("tmpl")))
+	utils.ErrorPanic(viper.BindEnv("tmplFile", "DIARY_TEMPLATE"))
+	n.tmplFile = viper.GetString("tmplFile")
 
 	command.Run = func(cmd *cobra.Command, args []string) {
 		diaryPath, err := n.New()
