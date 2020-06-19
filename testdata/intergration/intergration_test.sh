@@ -34,6 +34,10 @@ outputCheck $(diary new -d 1999/1/22 | sed -e 's/generated //g') 19990122.md
 outputCheck $(diary new -d y | sed -e 's/generated //g')
 outputCheck $(diary new -d tm | sed -e 's/generated //g')
 
+echo "test" > template/copy.template.md
+outputCheck $(DIARY_TEMPLATE=template/copy.template.md diary new -d 2001/1/1 | sed -e 's/generated //g') 20010101.md
+outputCheck $(cat 20010101.md) "test"
+
 diary format
 diary format --copyDir copy --file copy.md
 
