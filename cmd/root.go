@@ -11,7 +11,8 @@ func NewRootCommand(commands ...*cobra.Command) *cobra.Command {
 		Long: `Diary is a CLI tool for managing your diary.
 This application can create diary, format your diary directory, and make index file.
 `,
-		Args: cobra.MinimumNArgs(1),
+		Args:    cobra.MinimumNArgs(1),
+		Version: "1.0.0",
 	}
 	rootCmd.AddCommand(
 		commands...,
