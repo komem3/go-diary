@@ -51,11 +51,11 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 		"File name format.\nRefer to https://golang.org/src/time/format.go",
 	)
 	command.Flags().String("tmpl", n.tmplFile,
-		"Parse template file.\nThe environment variable DIARY_TEMPLATE is set.",
+		"Parse template file.\nThe environment variable DIARY_NEW_TEMPLATE is set.",
 	)
-	utils.ErrorPanic(viper.BindPFlag("tmplFile", command.Flags().Lookup("tmpl")))
-	utils.ErrorPanic(viper.BindEnv("tmplFile", "DIARY_TEMPLATE"))
-	n.tmplFile = viper.GetString("tmplFile")
+	utils.ErrorPanic(viper.BindPFlag("new_tmplFile", command.Flags().Lookup("tmpl")))
+	utils.ErrorPanic(viper.BindEnv("new_tmplFile", "DIARY_NEW_TEMPLATE"))
+	n.tmplFile = viper.GetString("new_tmplFile")
 
 	command.Run = func(cmd *cobra.Command, args []string) {
 		diaryPath, err := n.New()
