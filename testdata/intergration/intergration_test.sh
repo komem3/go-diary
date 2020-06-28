@@ -29,17 +29,28 @@ outputCheck $(diary -h)
 diary init
 outputCheck "$(ls template)"
 
-outputCheck $(diary new | sed -e 's/generated //g')
-outputCheck $(diary new -d 1999/1/22 | sed -e 's/generated //g') 19990122.md
-outputCheck $(diary new -d y | sed -e 's/generated //g')
-outputCheck $(diary new -d tm | sed -e 's/generated //g')
+function removeWord() {
+    cat - | sed -e 's/generated //g'
+}
+
+outputCheck $(diary new | removeWord)
+outputCheck $(diary new -d 1999/1/22 | removeWord) 19990122.md
+outputCheck $(diary new -d y | removeWord)
+outputCheck $(diary new -d tm | removeWord)
 
 echo "test" > template/copy.template.md
-outputCheck $(DIARY_TEMPLATE=template/copy.template.md diary new -d 2001/1/1 | sed -e 's/generated //g') 20010101.md
+outputCheck $(DIARY_NEW_TEMPLATE=template/copy.template.md diary new -d 2001/1/1 | removeWord) 20010101.md
 outputCheck $(cat 20010101.md) "test"
 
-diary format
-diary format --copyDir copy --file copy.md
+function removeWord() {
+    cat - | sed -e 's/write index to //g'
+}
+
+outputCheck $(diary format | removeWord) README.md
+outputCheck $(diary format --copyDir copy --file copy.md | removeWord) copy/copy.md
+outputCheck $(DIARY_INDEX_FILE=index.txt DIARY_INDEX_TEMPLATE=template/copy.template.md \
+                              diary format | removeWord) index.txt
+outputCheck $(cat index.txt) "test"
 
 dir=${PWD##*/}
 if [ $dir != "mydiary" ]; then
