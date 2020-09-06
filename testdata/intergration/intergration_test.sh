@@ -47,7 +47,7 @@ function removeWord() {
 }
 
 outputCheck $(diary format | removeWord) README.md
-outputCheck $(diary format --copyDir copy --file copy.md | removeWord) copy/copy.md
+outputCheck $(diary format --copyDir copy --file copy.md --yearSort asc --monthSort desc --daySort desc | removeWord) copy/copy.md
 outputCheck $(DIARY_INDEX_FILE=index.txt DIARY_INDEX_TEMPLATE=template/copy.template.md \
                               diary format | removeWord) index.txt
 outputCheck $(cat index.txt) "test"
