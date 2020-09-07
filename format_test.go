@@ -281,7 +281,8 @@ func TestFormatter_FormatDir(t *testing.T) {
 func TestFormatter_Map2Elem(t *testing.T) {
 	type (
 		args struct {
-			fMap diary.FileMap
+			fMap    diary.FileMap
+			options []diary.Map2ElemOptionFunc
 		}
 		want struct {
 			elem diary.TopElem
@@ -293,9 +294,9 @@ func TestFormatter_Map2Elem(t *testing.T) {
 		want want
 	}{
 		{
-			"success1",
+			"success_no_option",
 			args{
-				diary.FileMap{
+				fMap: diary.FileMap{
 					"2019": {
 						"12": {
 							"01": "test1/20191201.md",
@@ -360,13 +361,159 @@ func TestFormatter_Map2Elem(t *testing.T) {
 				},
 			},
 		},
+		{
+			"success_same_as_default_option",
+			args{
+				fMap: diary.FileMap{
+					"2019": {
+						"12": {
+							"01": "test1/20191201.md",
+							"12": "test1/20191212.md",
+						},
+						"01": {
+							"01": "test1/20190101.md",
+						},
+					},
+					"2018": {
+						"02": {
+							"31": "test1/20180231.md",
+						},
+					},
+				},
+				options: []diary.Map2ElemOptionFunc{
+					diary.YearSort(diary.DESCSort),
+					diary.MonthSort(diary.ASCSort),
+					diary.DaySort(diary.ASCSort),
+				},
+			},
+			want{
+				diary.TopElem{
+					Years: []diary.YearElem{
+						{
+							Year: "2019",
+							Months: []diary.MonthElem{
+								{
+									Month: "01",
+									Days: []diary.DayElem{
+										{
+											Day:  "20190101.md",
+											Path: "2019/01/20190101.md",
+										},
+									},
+								},
+								{
+									Month: "12",
+									Days: []diary.DayElem{
+										{
+											Day:  "20191201.md",
+											Path: "2019/12/20191201.md",
+										},
+										{
+											Day:  "20191212.md",
+											Path: "2019/12/20191212.md",
+										},
+									},
+								},
+							},
+						},
+						{
+							Year: "2018",
+							Months: []diary.MonthElem{
+								{
+									Month: "02",
+									Days: []diary.DayElem{
+										{
+											Day:  "20180231.md",
+											Path: "2018/02/20180231.md",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			"success_reverse_option",
+			args{
+				fMap: diary.FileMap{
+					"2019": {
+						"12": {
+							"01": "test1/20191201.md",
+							"12": "test1/20191212.md",
+						},
+						"01": {
+							"01": "test1/20190101.md",
+						},
+					},
+					"2018": {
+						"02": {
+							"31": "test1/20180231.md",
+						},
+					},
+				},
+				options: []diary.Map2ElemOptionFunc{
+					diary.YearSort(diary.ASCSort),
+					diary.MonthSort(diary.DESCSort),
+					diary.DaySort(diary.DESCSort),
+				},
+			},
+			want{
+				diary.TopElem{
+					Years: []diary.YearElem{
+						{
+							Year: "2018",
+							Months: []diary.MonthElem{
+								{
+									Month: "02",
+									Days: []diary.DayElem{
+										{
+											Day:  "20180231.md",
+											Path: "2018/02/20180231.md",
+										},
+									},
+								},
+							},
+						},
+						{
+							Year: "2019",
+							Months: []diary.MonthElem{
+								{
+									Month: "12",
+									Days: []diary.DayElem{
+										{
+											Day:  "20191212.md",
+											Path: "2019/12/20191212.md",
+										},
+										{
+											Day:  "20191201.md",
+											Path: "2019/12/20191201.md",
+										},
+									},
+								},
+								{
+									Month: "01",
+									Days: []diary.DayElem{
+										{
+											Day:  "20190101.md",
+											Path: "2019/01/20190101.md",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	logger := diary.NewLogger(true)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assertions := assert.New(t)
 			f := diary.NewFormatter(logger)
-			assertions.Equal(tt.want.elem, f.Map2Elem(tt.args.fMap))
+			assertions.Equal(tt.want.elem, f.Map2Elem(tt.args.fMap, tt.args.options...))
 		})
 	}
 }

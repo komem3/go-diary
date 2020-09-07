@@ -18,6 +18,13 @@ var (
 )
 
 type FileMap map[Year]map[Month]map[Day]string
+type SortType int
+
+const (
+	InValid SortType = iota
+	ASCSort
+	DESCSort
+)
 
 // Formatter is generator diary.
 type Formatter struct {
@@ -204,7 +211,12 @@ func (f *Formatter) FormatDir(fMap FileMap, to string, move bool) *Formatter {
 }
 
 // Map2Elem convert FileMap to TopElem.
-func (f Formatter) Map2Elem(fMap FileMap) (elem TopElem) {
+func (f Formatter) Map2Elem(fMap FileMap, optionFuncs ...Map2ElemOptionFunc) (elem TopElem) {
+	option := map2ElemOption{ySort: DESCSort, mSort: ASCSort, dSort: ASCSort}
+	for _, f := range optionFuncs {
+		f(&option)
+	}
+
 	var i, j int
 	for y, yMap := range fMap {
 		elem.Years = append(elem.Years, YearElem{Year: y})
@@ -220,21 +232,63 @@ func (f Formatter) Map2Elem(fMap FileMap) (elem TopElem) {
 				)
 			}
 			sort.Slice(elem.Years[i].Months[j].Days, func(l, r int) bool {
-				return elem.Years[i].Months[j].Days[l].Day < elem.Years[i].Months[j].Days[r].Day
+				return applyOption(
+					elem.Years[i].Months[j].Days[l].Day < elem.Years[i].Months[j].Days[r].Day,
+					option.dSort,
+				)
 			})
 			j++
 		}
 		j = 0
 		sort.Slice(elem.Years[i].Months, func(l, r int) bool {
-			return elem.Years[i].Months[l].Month < elem.Years[i].Months[r].Month
+			return applyOption(
+				elem.Years[i].Months[l].Month < elem.Years[i].Months[r].Month,
+				option.mSort,
+			)
 		})
 		i++
 	}
 	sort.Slice(elem.Years, func(l, r int) bool {
-		return elem.Years[l].Year > elem.Years[r].Year
+		return applyOption(elem.Years[l].Year < elem.Years[r].Year, option.ySort)
 	})
 
 	return elem
+}
+
+func applyOption(compare bool, option SortType) bool {
+	if option == DESCSort {
+		return !compare
+	}
+	return compare
+}
+
+type Map2ElemOptionFunc func(*map2ElemOption)
+
+type map2ElemOption struct {
+	ySort SortType
+	mSort SortType
+	dSort SortType
+}
+
+// YearSort specify year sort.
+func YearSort(s SortType) Map2ElemOptionFunc {
+	return func(o *map2ElemOption) {
+		o.ySort = s
+	}
+}
+
+// MonthSort specify month sort.
+func MonthSort(s SortType) Map2ElemOptionFunc {
+	return func(o *map2ElemOption) {
+		o.mSort = s
+	}
+}
+
+// DaySort specify day sort.
+func DaySort(s SortType) Map2ElemOptionFunc {
+	return func(o *map2ElemOption) {
+		o.dSort = s
+	}
 }
 
 func (f Formatter) copyFile(srcName, dstName string) error {
