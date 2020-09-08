@@ -1,5 +1,8 @@
 # Go-diary
 
+[![CircleCI](https://circleci.com/gh/komem3/go-diary.svg?style=svg&circle-token=e9c905abe7b4522efa323463121ffa00ad8acc0d)](https://app.circleci.com/pipelines/github/komem3/go-diary)
+
+
 Go-diary is a tool for managing diaries.
 
 ## Contents
