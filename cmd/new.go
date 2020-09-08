@@ -53,9 +53,8 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 	command.Flags().String("tmpl", n.tmplFile,
 		"Parse template file.\nThe environment variable DIARY_NEW_TEMPLATE is set.",
 	)
-	utils.ErrorPanic(viper.BindPFlag("new_tmplFile", command.Flags().Lookup("tmpl")))
-	utils.ErrorPanic(viper.BindEnv("new_tmplFile", "DIARY_NEW_TEMPLATE"))
-	n.tmplFile = viper.GetString("new_tmplFile")
+	utils.ErrorPanic(viper.BindPFlag("tmpl", command.Flags().Lookup("tmpl")))
+	utils.ErrorPanic(viper.BindEnv("tmple", "DIARY_NEW_TEMPLATE"))
 
 	command.Run = func(cmd *cobra.Command, args []string) {
 		diaryPath, err := n.New()
@@ -69,6 +68,8 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 }
 
 func (n newer) New() (string, error) {
+	n.tmplFile = viper.GetString("tmpl")
+
 	logger := diary.NewLogger(n.verbose)
 
 	generator := diary.NewCreator(logger)
