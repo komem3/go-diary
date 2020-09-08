@@ -1,0 +1,40 @@
+task:
+  name: code test
+  container:
+    image: golang:1.14
+  go_modules_cache:
+    folder: $GOPATH/pkg/mod
+    fingerprint_script: cat go.sum
+    populate_script: go mod download
+
+  matrix:
+    - name: Unit Test
+      script: go test ./...
+    - name: Intergration Test
+      script: |
+        cd cmd/diary && go install . && \
+        cd ./testdata/intergration && \
+        ./intergration_test.sh
+
+task:
+  container:
+    image: golangci/golangci-lint:v1.27.0
+  name: source lint
+  script: |
+        golangci-lint run ./... --disable-all \
+        -E govet -E errcheck -E staticcheck -E unused -E gosimple \
+        -E structcheck -E varcheck -E ineffassign -E deadcode -E typecheck \
+        -E golint -E interfacer -E unconvert -E dupl -E goconst \
+        -E asciicheck -E gofmt -E goimports -E misspell -E lll -E unparam \
+        -E prealloc -E gocritic -E gochecknoinits -E whitespace -E gomnd \
+        -E goerr113 -E gomodguard -E godot -E testpackage
+
+task:
+  container:
+    image: node:14
+  node_modules_cache:
+    folder: node_modules
+    fingerprint_script: cat package-lock.json
+    populate_script: npm install
+  name: markdown lint
+  script: npm run lint

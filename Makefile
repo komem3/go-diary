@@ -3,9 +3,7 @@ help: ## help
 
 init: ## init
 	go mod download && \
-	go get golang.org/x/tools/cmd/goimports && \
-	rm -r node_modules && \
-	npm ci && \
+	npm i && \
 	cp ./hack/precommit.sh .git/hooks/pre-commit
 
 # Test
