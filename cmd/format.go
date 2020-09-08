@@ -83,16 +83,17 @@ After format directory, it write directory structure to target file.
 	utils.ErrorPanic(viper.BindEnv("format_templFile", "DIARY_INDEX_TEMPLATE"))
 
 	command.Run = func(cmd *cobra.Command, args []string) {
-		if err := f.Format(); err != nil {
+		file, err := f.Format()
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 			return
 		}
-		fmt.Fprintf(os.Stdout, "write index to %s\n", filepath.Join(f.to, f.file))
+		fmt.Fprintf(os.Stdout, "write index to %s\n", file)
 	}
 	return command
 }
 
-func (f formatter) Format() error {
+func (f formatter) Format() (file string, err error) {
 	f.file = viper.GetString("format_file")
 	f.templFile = viper.GetString("format_templFile")
 	logger := diary.NewLogger(f.verbose)
@@ -102,7 +103,7 @@ func (f formatter) Format() error {
 
 	options, err := f.createMap2ElemOption()
 	if err != nil {
-		return fmt.Errorf("create order options: %w", err)
+		return "", fmt.Errorf("create order options: %w", err)
 	}
 
 	formatter := diary.NewFormatter(logger)
@@ -115,9 +116,9 @@ func (f formatter) Format() error {
 	formatter.FormatDir(fMap, f.to, f.to == f.from).WriteDirTree(elem, f.file, f.templFile, f.to)
 
 	if formatter.Err != nil {
-		return fmt.Errorf("format and write dir tree: %w", formatter.Err)
+		return "", fmt.Errorf("format and write dir tree: %w", formatter.Err)
 	}
-	return nil
+	return filepath.Join(f.to, f.file), nil
 }
 
 func (f formatter) createMap2ElemOption() (options []diary.Map2ElemOptionFunc, err error) {
