@@ -50,9 +50,22 @@ jobs:
           name: exec markdown lint
           command: make lint_md
 
+  release:
+    executor: go-exec
+    steps:
+      - checkout
+      - run: curl -sL https://git.io/goreleaser | bash
+
 workflows:
   check_code:
     jobs:
       - test
       - go_lint
       - md_lint
+      - release:
+          # Only run this job on git tag pushes
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
