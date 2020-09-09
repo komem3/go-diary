@@ -54,6 +54,7 @@ jobs:
     executor: go-exec
     steps:
       - checkout
+      - run: cd ./cmd/diary/
       - run: curl -sL https://git.io/goreleaser | bash
 
 workflows:
