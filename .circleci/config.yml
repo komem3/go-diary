@@ -10,6 +10,9 @@ executors:
       Found here: https://hub.docker.com/r/cimg/go"
     docker:
       - image: cimg/go:1.14
+        auth: &docker_credit
+          username: $DOCKER_LOGIN
+          password: $DOCKER_PASSWORD
     environment:
       GOPATH: /home/circleci/go
   golangci-lint:
@@ -17,6 +20,7 @@ executors:
       "Go linters runnner."
     docker:
       - image: golangci/golangci-lint:v1.27.0
+        auth: *docker_credit
 
 jobs:
   test:
