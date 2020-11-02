@@ -29,7 +29,7 @@ jobs:
       - run:
           command: make test_intergration
           name: exec intergration test
-  
+
   go_lint:
     executor: golangci-lint
     steps:
@@ -59,10 +59,18 @@ jobs:
 workflows:
   check_code:
     jobs:
-      - test
-      - go_lint
-      - md_lint
+      - test:
+          context:
+            - docker_auth
+      - go_lint:
+          context:
+            - docker_auth
+      - md_lint:
+          context:
+            - docker_auth
       - release:
+          context:
+            - docker_auth
           # Only run this job on git tag pushes
           filters:
             branches:
