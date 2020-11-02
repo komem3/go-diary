@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@3.0
+  docker: circleci/docker@1.4.0
 
 executors:
   go-exec:
@@ -20,6 +21,12 @@ executors:
       "Go linters runnner."
     docker:
       - image: golangci/golangci-lint:v1.27.0
+        auth: *docker_credit
+  node-exec:
+    description: |
+      "Nodejs environment."
+    docker:
+      - image: circleci/node:latest
         auth: *docker_credit
 
 jobs:
@@ -43,7 +50,7 @@ jobs:
           command: make lint_go
 
   md_lint:
-    executor: node/default
+    executor: node-exec
     steps:
       - checkout
       - node/install-packages:
