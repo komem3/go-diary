@@ -17,6 +17,8 @@ var (
 	ErrInvalidSortType = errors.New("sort type is invalid")
 )
 
+const defulatFile = "README"
+
 type sortOption struct {
 	year  string
 	month string
@@ -36,7 +38,7 @@ func newFormatter() *formatter {
 	return &formatter{
 		from:      ".",
 		to:        "",
-		file:      "./README.md",
+		file:      defulatFile,
 		templFile: mdTmp(),
 		verbose:   false,
 	}
@@ -71,7 +73,7 @@ After format directory, it write directory structure to target file.
 	)
 
 	command.Flags().StringVarP(&f.file, "file", "f", f.file,
-		"Write file.\nnThe environment variable DIARY_INDEX_FILE is set.",
+		"Write file. File ext is extended tmpl ext.\nThe environment variable DIARY_INDEX_FILE is set.",
 	)
 	utils.ErrorPanic(viper.BindPFlag("format_file", command.Flags().Lookup("file")))
 	utils.ErrorPanic(viper.BindEnv("format_file", "DIARY_INDEX_FILE"))
@@ -96,6 +98,10 @@ After format directory, it write directory structure to target file.
 func (f formatter) Format() (file string, err error) {
 	f.file = viper.GetString("format_file")
 	f.templFile = viper.GetString("format_templFile")
+	if filepath.Ext(f.file) == "" {
+		f.file += filepath.Ext(f.templFile)
+	}
+
 	logger := diary.NewLogger(f.verbose)
 	if f.to == "" {
 		f.to = f.from

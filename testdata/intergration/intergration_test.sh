@@ -46,6 +46,10 @@ echo "flag" > template/flag.template.md
 outputCheck $(diary new -d 2001/2/1 --tmpl template/flag.template.md | removeWord) 20010201.md
 outputCheck $(cat 20010201.md) "flag"
 
+echo "* ext" > template/ext.template.org
+outputCheck $(diary new -d 2001/2/2 --format "2006_01_02" --tmpl template/ext.template.org | removeWord) 2001_02_02.org
+outputCheck $(cat 2001_02_02.org) "* ext"
+
 function removeWord() {
     cat - | sed -e 's/write index to //g'
 }
@@ -59,6 +63,9 @@ outputCheck $(cat index.txt) "test"
 
 outputCheck $(diary format --file index.out --tmpl template/flag.template.md | removeWord) index.out
 outputCheck $(cat index.out) "flag"
+
+outputCheck $(diary format --file index --tmpl template/ext.template.org | removeWord) index.org
+outputCheck $(cat index.org) "* ext"
 
 dir=${PWD##*/}
 if [ $dir != "mydiary" ]; then

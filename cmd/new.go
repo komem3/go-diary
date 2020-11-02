@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"time"
@@ -12,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+const defaultFormat = "20060102"
 
 type newer struct {
 	tmplFile   string
@@ -27,7 +30,7 @@ func newNewer() *newer {
 		tmplFile:   "template/diary.template.md",
 		dir:        ".",
 		date:       "today",
-		nameFormat: "20060102.md",
+		nameFormat: defaultFormat,
 	}
 }
 
@@ -48,7 +51,7 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 	)
 	command.Flags().BoolVar(&n.verbose, "v", n.verbose, "Output verbose.")
 	command.Flags().StringVarP(&n.nameFormat, "format", "f", n.nameFormat,
-		"File name format.\nRefer to https://golang.org/src/time/format.go",
+		"File name format. File ext is extended tmpl ext.\nRefer to https://golang.org/src/time/format.go",
 	)
 	command.Flags().String("tmpl", n.tmplFile,
 		"Parse template file.\nThe environment variable DIARY_NEW_TEMPLATE is set.",
@@ -69,6 +72,9 @@ Format: YYYY/MM/dd(2010/01/31) or today(t) or yesterday(y) or tomorrow(tm).`,
 
 func (n newer) New() (string, error) {
 	n.tmplFile = viper.GetString("tmpl")
+	if filepath.Ext(n.nameFormat) == "" {
+		n.nameFormat += filepath.Ext(n.tmplFile)
+	}
 
 	logger := diary.NewLogger(n.verbose)
 
