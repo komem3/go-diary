@@ -53,39 +53,12 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 		"templateFile", templatePath,
 	)
 
-	tmpName := fmt.Sprintf("diary-%v-tmp.txt", f.now().UnixNano())
+	tmpName := fmt.Sprintf("%s/diary-%v-tmp.txt", os.TempDir(), f.now().UnixNano())
 	err := func() error {
 		tmpFile, err := os.Create(tmpName)
-		if err != nil {
-			return fmt.Errorf("open temp file: %w", err)
-		}
 
 		writer := bufio.NewWriter(tmpFile)
 		defer CloseWithErrLog(f.logger, tmpFile)
-
-		file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return fmt.Errorf("open base file: %w", err)
-			}
-		} else {
-			defer CloseWithErrLog(f.logger, file)
-
-			reader := bufio.NewReader(file)
-			for {
-				line, err := reader.ReadString('\n')
-				if err == io.EOF || line == "# diary record\n" {
-					break
-				}
-				if err != nil {
-					return fmt.Errorf("read base file: %w", err)
-				}
-				_, err = writer.WriteString(line)
-				if err != nil {
-					return fmt.Errorf("write base content to temp file: %w", err)
-				}
-			}
-		}
 
 		temp, err := template.New(filepath.Base(templatePath)).ParseFiles(templatePath)
 		if err != nil {
