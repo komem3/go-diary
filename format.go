@@ -56,6 +56,9 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 	tmpName := fmt.Sprintf("%s/diary-%v-tmp.txt", os.TempDir(), f.now().UnixNano())
 	err := func() error {
 		tmpFile, err := os.Create(tmpName)
+		if err != nil {
+			return fmt.Errorf("create template file: %w", err)
+		}
 
 		writer := bufio.NewWriter(tmpFile)
 		defer CloseWithErrLog(f.logger, tmpFile)
