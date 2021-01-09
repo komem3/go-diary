@@ -125,7 +125,7 @@ func TestFormatter_ParseFileMap(t *testing.T) {
 		want want
 	}{
 		{
-			"success1",
+			"success",
 			"./testdata/ParseDirTree/data1",
 			want{
 				diary.FileMap{
@@ -146,7 +146,7 @@ func TestFormatter_ParseFileMap(t *testing.T) {
 			},
 		},
 		{
-			"success2",
+			"contain ignore file and dir",
 			"./testdata/ParseDirTree/data2",
 			want{
 				diary.FileMap{
