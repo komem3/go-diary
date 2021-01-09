@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -53,13 +54,12 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 		"templateFile", templatePath,
 	)
 
-	tmpName := fmt.Sprintf("%s/diary-%v-tmp.txt", os.TempDir(), f.now().UnixNano())
-	err := func() error {
-		tmpFile, err := os.Create(tmpName)
-		if err != nil {
-			return fmt.Errorf("create template file: %w", err)
-		}
-
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "diary.*.txt")
+	if err != nil {
+		f.Err = fmt.Errorf("create template file: %w", err)
+		return f
+	}
+	err = func() error {
 		writer := bufio.NewWriter(tmpFile)
 		defer CloseWithErrLog(f.logger, tmpFile)
 
@@ -80,22 +80,32 @@ func (f *Formatter) WriteDirTree(elem TopElem, filePath, templatePath, to string
 	}()
 	if err != nil {
 		f.Err = err
-		if err = os.Remove(tmpName); err != nil {
+		if err = os.Remove(tmpFile.Name()); err != nil {
 			f.logger.Error("err", err.Error())
 		}
 		return f
 	}
-	if err = os.Rename(tmpName, filePath); err != nil {
+	if err = os.Rename(tmpFile.Name(), filePath); err != nil {
 		f.Err = fmt.Errorf("rename temp file to %s: %w", filePath, err)
 	}
 	return f
 }
 
 // ParseFileMap analys dir and parse FileMap.
+//
+// Hidden files and directories are ignored.
 func (f Formatter) ParseFileMap(root string) FileMap {
 	re := regexp.MustCompile(`([0-9]{4})([0-9]{2})([0-9]{2}).*\.[a-zA-Z]+$`)
 	fmap := make(FileMap)
 	if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		// ignore case
+		switch {
+		case info.IsDir() && info.Name()[0] == '.':
+			return filepath.SkipDir
+		case !info.IsDir() && info.Name()[0] == '.':
+			return nil
+		}
+
 		submathes := re.FindStringSubmatch(path)
 		if len(submathes) == 0 {
 			return nil
