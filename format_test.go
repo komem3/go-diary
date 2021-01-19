@@ -2,10 +2,14 @@ package diary_test
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/komem3/go-diary"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFormatter_WriteDirTree(t *testing.T) {
@@ -115,17 +119,24 @@ func TestFormatter_WriteDirTree(t *testing.T) {
 
 func TestFormatter_ParseFileMap(t *testing.T) {
 	type (
+		env struct {
+			pwd string
+		}
 		want struct {
 			elem diary.FileMap
 		}
 	)
 	tests := []struct {
 		name string
+		env  env
 		args string
 		want want
 	}{
 		{
 			"success",
+			env{
+				pwd: "",
+			},
 			"./testdata/ParseDirTree/data1",
 			want{
 				diary.FileMap{
@@ -137,7 +148,8 @@ func TestFormatter_ParseFileMap(t *testing.T) {
 					"2019": {
 						"01": {
 							"01": "testdata/ParseDirTree/data1/2019/1/20190101.md",
-							"02": "testdata/ParseDirTree/data1/2019/1/20190102_test.md"},
+							"02": "testdata/ParseDirTree/data1/2019/1/20190102_test.md",
+						},
 						"02": {
 							"20": "testdata/ParseDirTree/data1/2019/2/20190220.md",
 						},
@@ -147,20 +159,48 @@ func TestFormatter_ParseFileMap(t *testing.T) {
 		},
 		{
 			"contain ignore file and dir",
-			"./testdata/ParseDirTree/data2",
+			env{
+				pwd: "testdata/ParseDirTree/data2",
+			},
+			".",
 			want{
 				diary.FileMap{
 					"2020": {
 						"02": {
-							"03": "testdata/ParseDirTree/data2/20200203.md",
+							"03": "20200203.md",
 						},
 						"04": {
-							"04": "testdata/ParseDirTree/data2/2019/20200404.md",
+							"04": "2019/20200404.md",
 						},
 					},
 					"2019": {
 						"12": {
-							"12": "testdata/ParseDirTree/data2/2019/20191212.md",
+							"12": "2019/20191212.md",
+						},
+					},
+				},
+			},
+		},
+		{
+			"parent directory",
+			env{
+				pwd: "testdata/ParseDirTree/data1/2018",
+			},
+			"..",
+			want{
+				diary.FileMap{
+					"2018": {
+						"03": {
+							"02": "../2018/3/20180302.md",
+						},
+					},
+					"2019": {
+						"01": {
+							"01": "../2019/1/20190101.md",
+							"02": "../2019/1/20190102_test.md",
+						},
+						"02": {
+							"20": "../2019/2/20190220.md",
 						},
 					},
 				},
@@ -168,11 +208,19 @@ func TestFormatter_ParseFileMap(t *testing.T) {
 		},
 	}
 	logger := diary.NewLogger(true)
+	_, filename, _, _ := runtime.Caller(0)
+	pwd := filepath.Dir(filename)
+	defer os.Chdir(pwd)
 	for _, tt := range tests {
-		assertions := assert.New(t)
-		f := diary.NewFormatter(logger)
-		fmap := f.ParseFileMap(tt.args)
-		assertions.Equal(tt.want.elem, fmap)
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			assertions := assert.New(t)
+			err := os.Chdir(filepath.Join(pwd, tt.env.pwd))
+			require.NoError(t, err)
+			f := diary.NewFormatter(logger)
+			fmap := f.ParseFileMap(tt.args)
+			assertions.Equal(tt.want.elem, fmap)
+		})
 	}
 }
 
