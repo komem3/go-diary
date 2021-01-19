@@ -14,12 +14,12 @@ import (
 	"time"
 )
 
-var (
-	ErrNotParamater = errors.New("insufficient parameters")
-)
+var ErrNotParamater = errors.New("insufficient parameters")
 
-type FileMap map[Year]map[Month]map[Day]string
-type SortType int
+type (
+	FileMap  map[Year]map[Month]map[Day]string
+	SortType int
+)
 
 const (
 	InValid SortType = iota
@@ -100,6 +100,8 @@ func (f Formatter) ParseFileMap(root string) FileMap {
 	if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		// ignore case
 		switch {
+		case info.Name() == "." || info.Name() == "..":
+			// not ignore directory
 		case info.IsDir() && info.Name()[0] == '.':
 			return filepath.SkipDir
 		case !info.IsDir() && info.Name()[0] == '.':
