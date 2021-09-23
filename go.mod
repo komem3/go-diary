@@ -3,7 +3,7 @@ module github.com/komem3/go-diary
 go 1.15
 
 require (
-	github.com/go-kit/kit v0.11.0
+	github.com/go-kit/kit v0.12.0
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/manifoldco/promptui v0.8.0
 	github.com/rakyll/statik v0.1.7
